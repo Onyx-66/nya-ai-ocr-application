@@ -41,20 +41,13 @@ export default function Layout() {
   useEffect(() => {
     if (!user) return;
     const today = new Date().toLocaleDateString('en-CA');
-    const patch = {};
-    let base = user.credits;
-    if (base == null) { base = 15; patch.credits = 15; }
-    if (user.last_daily_gift !== today) {
-      patch.credits = base + 4;
-      patch.last_daily_gift = today;
-    }
-    if (Object.keys(patch).length) {
-      const gifted = !!patch.last_daily_gift;
-      base44.auth.updateMe(patch).then(() => {
+    if (user.credits != null && user.last_daily_gift === today) return;
+    base44.functions.invoke('manageCredits', { action: 'daily_gift' }).then((res) => {
+      if (res.data && res.data.granted) {
         checkUserAuth();
-        if (gifted) toast({ variant: 'default', title: 'Daily login gift', description: '+4 credits added to your account.' });
-      }).catch(() => {});
-    }
+        toast({ variant: 'default', title: 'Daily login gift', description: '+4 credits added to your account.' });
+      }
+    }).catch(() => {});
   }, [user]);
 
   return (

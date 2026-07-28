@@ -49,9 +49,14 @@ export default function BatchWorkspace() {
 
   const checkCredits = () => creditsRef.current >= 1;
   const spendCredit = async () => {
-    creditsRef.current = Math.max(0, creditsRef.current - 1);
-    setCredits(creditsRef.current);
-    try { await base44.auth.updateMe({ credits: creditsRef.current }); await checkUserAuth(); } catch {}
+    try {
+      const res = await base44.functions.invoke('manageCredits', { action: 'spend' });
+      if (res.data && typeof res.data.credits === 'number') {
+        creditsRef.current = res.data.credits;
+        setCredits(res.data.credits);
+      }
+      await checkUserAuth();
+    } catch {}
   };
   const makeCtx = () => ({
     serieTitle: store.getState().serieTitle, format: store.getState().format,

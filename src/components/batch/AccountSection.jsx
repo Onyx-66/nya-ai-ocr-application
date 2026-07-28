@@ -26,8 +26,7 @@ export default function AccountSection() {
   const apply = async () => {
     if (isZero) return;
     try {
-      const next = Math.max(0, (user?.credits ?? 0) + amt);
-      await base44.auth.updateMe({ credits: next });
+      await base44.functions.invoke('manageCredits', { action: 'adjust', amount: amt });
       setAmount(''); setMsg(`${amt > 0 ? 'Added' : 'Removed'} ${Math.abs(amt)} credit${Math.abs(amt) > 1 ? 's' : ''}`);
       setTimeout(() => setMsg(null), 1800);
       await checkUserAuth();
@@ -67,9 +66,9 @@ export default function AccountSection() {
         </div>
       </div>
 
-      {/* Adjust */}
+      {user?.role === 'admin' && (
       <div>
-        <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Add or remove credits</label>
+        <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Add or remove credits (admin)</label>
         <div className="flex items-center gap-2">
           <div className="relative w-36">
             <input
@@ -89,6 +88,7 @@ export default function AccountSection() {
         </div>
         <p className="text-[11px] text-[hsl(var(--c-dim))] mt-1.5">Positive number adds credits, negative (e.g. -7) removes them.</p>
       </div>
+      )}
 
       {/* Delete account */}
       <div className="pt-3 border-t border-[hsl(var(--c-border))]">
