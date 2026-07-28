@@ -25,11 +25,13 @@ CLASSIFICATION — assign each text item EXACTLY one type, using these visual cu
 - tlnote: an existing translator's / scanlator's note printed in the image, usually prefixed "TL/N:" or "Note:".
 
 RULES:
-- ONE speech bubble = ONE item. If a bubble contains several visual lines, JOIN them into a single line separated by a single space.
-- Transcribe the ORIGINAL language exactly. Do NOT translate. Do NOT add quotation marks, speaker names, or any text not in the image.
+- ONE DISTINCT speech bubble = ONE SEPARATE item. If a single bubble contains several visual lines, JOIN those lines into ONE item separated by a single space.
+- NEVER merge two different bubbles into one item. Each physically separate bubble (its own border/outline/tail) is its own item, even when bubbles are close together, overlapping, stacked, side by side, or visually similar. When unsure whether two text regions are one bubble or two, treat them as TWO separate items.
+- Two bubbles that form a single continuous sentence are still TWO items: transcribe the first as "speech" and the continuation as "continue" — do not combine them.
 - If a bubble is empty or only contains drawings, skip it.
+- Transcribe the ORIGINAL language exactly. Do NOT translate. Do NOT add quotation marks, speaker names, or any text not in the image.
 - If text is partially cut or hard to read, give your best-guess transcription.
-- Before finalizing, re-check each item's type against the visual cues above.
+- Before finalizing, re-check: count the distinct bubbles in the panel and make sure you have one item per bubble (plus non-bubble elements). If you merged any, split them now.
 Return ONLY JSON matching the schema.`;
 
 export default async function(req: Request): Promise<Response> {

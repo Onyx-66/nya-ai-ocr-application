@@ -24,13 +24,23 @@ export function getActiveTemplate() {
   return getTemplates().find((t) => t.id === id) || null;
 }
 
-// Seed sensible defaults once.
+// Seed sensible defaults. Additive: never remove user templates, only add
+// any built-in default that is missing (matched by name) so new defaults
+// (e.g. the .docx template) also appear for existing users.
+const DEFAULT_TEMPLATE_LIST = [
+  { name: 'Plain text', format: 'txt', emptyLine: false },
+  { name: 'Markdown', format: 'md', emptyLine: false },
+  { name: 'Word document', format: 'docx', emptyLine: false },
+  { name: 'Spaced dialogue', format: 'txt', emptyLine: true },
+];
 export function ensureDefaultTemplates() {
-  if (getTemplates().length) return;
+  const existing = getTemplates();
+  const have = new Set(existing.map((t) => t.name));
+  const missing = DEFAULT_TEMPLATE_LIST.filter((d) => !have.has(d.name));
+  if (!missing.length) return;
   saveTemplates([
-    { id: crypto.randomUUID(), name: 'Plain text', format: 'txt', markers: { ...DEFAULT_MARKERS }, emptyLine: false },
-    { id: crypto.randomUUID(), name: 'Markdown', format: 'md', markers: { ...DEFAULT_MARKERS }, emptyLine: false },
-    { id: crypto.randomUUID(), name: 'Spaced dialogue', format: 'txt', markers: { ...DEFAULT_MARKERS }, emptyLine: true },
+    ...existing,
+    ...missing.map((d) => ({ id: crypto.randomUUID(), markers: { ...DEFAULT_MARKERS }, ...d })),
   ]);
 }
 

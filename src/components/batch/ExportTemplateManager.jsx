@@ -3,7 +3,7 @@ import { getTemplates, addTemplate, updateTemplate, deleteTemplate, blankTemplat
 import { MARKER_TYPES } from '@/lib/markers';
 import { Plus, Trash2, Check, Edit2, X } from 'lucide-react';
 
-const FORMATS = [{ id: 'txt', label: '.txt' }, { id: 'md', label: '.md' }];
+const FORMATS = [{ id: 'txt', label: '.txt' }, { id: 'md', label: '.md' }, { id: 'docx', label: '.docx' }];
 
 export default function ExportTemplateManager() {
   const [templates, setTemplates] = useState(() => getTemplates());

@@ -29,6 +29,7 @@ export default async function(req: Request): Promise<Response> {
 
     const children = listData.files || [];
     const chapters = [];
+    const looseImages = []; // images sitting directly in this folder → ONE chapter
     for (const child of children) {
       const cm = child.mimeType || '';
       try {
@@ -44,9 +45,16 @@ export default async function(req: Request): Promise<Response> {
           const dl = await fetch(`https://www.googleapis.com/drive/v3/files/${child.id}?alt=media`, { headers: auth });
           if (!dl.ok) continue;
           const img = await uploadImage(base44, await dl.blob(), child.name);
-          if (img) chapters.push({ title: (child.name || 'image').replace(/\.[^.]+$/, ''), images: [img] });
+          if (img) looseImages.push(img);
         }
       } catch (_) { /* skip child */ }
+    }
+
+    // A Drive folder that only contains loose images is a SINGLE chapter
+    // (all images = pages of that chapter), not one chapter per image.
+    if (looseImages.length) {
+      looseImages.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true }));
+      chapters.push({ title: meta.name || 'Chapter', images: looseImages });
     }
 
     return Response.json({ chapters, count: chapters.length });
