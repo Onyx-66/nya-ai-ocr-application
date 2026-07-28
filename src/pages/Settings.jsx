@@ -1,5 +1,5 @@
 import { useAuth } from '@/lib/AuthContext';
-import { Cloud, Palette, Type, ListChecks, UserCircle, Sliders, Layers } from 'lucide-react';
+import { Cloud, Palette, Type, ListChecks, UserCircle, Sliders, Layers, Check } from 'lucide-react';
 import { useTheme, THEMES, FONTS } from '@/lib/ThemeContext';
 import SettingsSection from '@/components/SettingsSection';
 import MarkerSettings from '@/components/batch/MarkerSettings';
@@ -9,10 +9,12 @@ import ExportTemplateManager from '@/components/batch/ExportTemplateManager';
 import MobileSelect from '@/components/ui/MobileSelect';
 import AccountSection from '@/components/batch/AccountSection';
 import AdminPanel from '@/components/batch/AdminPanel';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function Settings() {
   const { user } = useAuth();
   const { theme, setTheme, fontFamily, setFontFamily, fontScale, setFontScale } = useTheme();
+  const { toast } = useToast();
 
   return (
     <div className="p-4 sm:p-6 md:p-10 max-w-3xl mx-auto">
@@ -72,6 +74,13 @@ export default function Settings() {
           </SettingsSection>
         )}
       </div>
+
+      <button
+        onClick={() => toast({ title: 'Settings saved', description: 'Your preferences are up to date.' })}
+        className="w-full flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] text-white rounded-lg px-3 py-3 text-sm font-medium mt-6"
+      >
+        <Check className="w-4 h-4" /> Save changes
+      </button>
     </div>
   );
 }
