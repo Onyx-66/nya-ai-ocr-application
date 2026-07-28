@@ -9,6 +9,7 @@ import {
   FileText, Languages, HardDrive, Unplug, Loader2, X, Search, CheckSquare, Square, Cloud, CloudOff
 } from 'lucide-react';
 import OutputPreview from '@/components/OutputPreview';
+import PullToRefresh from '@/components/PullToRefresh';
 
 async function hasPerm(h) { try { return (await h.queryPermission({ mode: 'readwrite' })) === 'granted'; } catch { return false; } }
 
@@ -45,6 +46,7 @@ export default function Library() {
   }, [entries, tab, query, isHistory]);
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(null), 2200); };
+  const refresh = async () => { setEntries(getLibrary()); const h = await getRootHandle(); setConnected(!!h && await hasPerm(h)); };
 
   const connect = async () => { try { await pickRoot(); setConnected(true); flash('Device folder connected'); } catch (e) { flash(e.message || 'Failed'); } };
   const disconnect = async () => { await clearRootHandle(); setConnected(false); flash('Folder disconnected'); };
@@ -63,7 +65,9 @@ export default function Library() {
   const toggleAll = () => setSelected(allSel ? new Set() : new Set(filtered.map((e) => e.id)));
 
   return (
-    <div className="p-4 sm:p-6 md:p-10 max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
+      <PullToRefresh onRefresh={refresh}>
+        <div className="p-4 sm:p-6 md:p-10">
       <div className="flex items-center justify-between gap-3 mb-1">
         <h1 className="text-2xl font-heading font-semibold text-[hsl(var(--c-text))]">Library</h1>
         <span className="text-sm text-[hsl(var(--c-dim))]">{isHistory ? 'History' : `${entries.length} saved`}</span>
@@ -178,7 +182,7 @@ export default function Library() {
                       <button onClick={() => setPreview(e)} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-2.5 py-1.5"><Eye className="w-3.5 h-3.5" />View</button>
                       <button onClick={() => copy(e)} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-2.5 py-1.5"><Copy className="w-3.5 h-3.5" />Copy</button>
                       <button onClick={() => doSave([e])} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-2.5 py-1.5"><FolderDown className="w-3.5 h-3.5" />Save</button>
-                      <button onClick={() => doDelete([e])} className="flex items-center gap-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg px-2.5 py-1.5 ml-auto"><Trash2 className="w-3.5 h-3.5" />Delete</button>
+                      <button onClick={() => doDelete([e])} className="flex items-center gap-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg px-3 py-2.5 ml-auto"><Trash2 className="w-3.5 h-3.5" />Delete</button>
                     </div>
                   )}
                 </div>
@@ -188,12 +192,14 @@ export default function Library() {
         </>
       )}
 
+        </div>
+      </PullToRefresh>
       {preview && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-3" onClick={() => setPreview(null)}>
           <div className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-xl bg-[hsl(var(--c-card))] border border-[hsl(var(--c-border))] overflow-hidden" onClick={(ev) => ev.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--c-border))]">
               <p className="text-sm font-medium text-[hsl(var(--c-text))] truncate">{preview.serie} · Chapter {preview.chapter}</p>
-              <button onClick={() => setPreview(null)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))]"><X className="w-5 h-5" /></button>
+              <button onClick={() => setPreview(null)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] p-2 -m-2 rounded-lg"><X className="w-5 h-5" /></button>
             </div>
             <div className="overflow-auto p-3"><OutputPreview output={preview.content} format={preview.format} /></div>
           </div>

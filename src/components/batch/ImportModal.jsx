@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import JSZip from 'jszip';
 import DriveBrowser from '@/components/batch/DriveBrowser';
 import { DRIVE_CONNECTOR_ID } from '@/lib/driveConnector';
+import { useOverlayBack } from '@/lib/overlayHistory';
 import { Loader2, UploadCloud, FolderOpen, FileArchive, Link2, X, ChevronDown, Check, HardDrive } from 'lucide-react';
 
 const IMAGE_RE = /\.(png|jpe?g|webp|gif|bmp)$/i;
@@ -20,6 +21,7 @@ export default function ImportModal({ open, onClose, onChapters }) {
   const zipRef = useRef(null);
   const folderRef = useRef(null);
   const browseRef = useRef(null);
+  const { close } = useOverlayBack('import', open, onClose);
 
   const uploadBlob = async (blob, name) => {
     const { file_url } = await base44.integrations.Core.UploadFile({ file: new File([blob], name, { type: blob.type || 'image/jpeg' }) });
@@ -118,7 +120,7 @@ export default function ImportModal({ open, onClose, onChapters }) {
     setLoading(false);
   };
 
-  const finish = () => { setDriveFolder(null); setError(null); onClose(); };
+  const finish = () => { setDriveFolder(null); setError(null); close(); };
 
   const onDrop = async (e) => {
     e.preventDefault(); setDrag(false);
@@ -138,20 +140,20 @@ export default function ImportModal({ open, onClose, onChapters }) {
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e) => e.key === 'Escape' && onClose();
+    const onKey = (e) => e.key === 'Escape' && close();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open, close]);
 
   useEffect(() => { if (open && driveConnected === null) checkDrive(); }, [open]);
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-3" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-3" onClick={close}>
       <div className="w-full max-w-lg flex flex-col rounded-xl bg-[hsl(var(--c-card))] border border-[hsl(var(--c-border))] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--c-border))]">
           <p className="text-sm font-medium text-[hsl(var(--c-text))] flex items-center gap-2"><UploadCloud className="w-4 h-4 text-[hsl(var(--c-accent))]" /> Import chapters</p>
-          <button onClick={onClose} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))]"><X className="w-5 h-5" /></button>
+          <button onClick={close} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] p-2 -m-2 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="p-4 space-y-4">
@@ -169,10 +171,10 @@ export default function ImportModal({ open, onClose, onChapters }) {
               </button>
               {browseOpen && (
                 <div className="absolute z-20 mt-1 w-full rounded-lg border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] shadow-xl overflow-hidden">
-                  <button onClick={() => { setBrowseOpen(false); zipRef.current?.click(); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[hsl(var(--c-text))] hover:bg-[hsl(var(--c-soft))] text-left">
+                  <button onClick={() => { setBrowseOpen(false); zipRef.current?.click(); }} className="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[hsl(var(--c-text))] hover:bg-[hsl(var(--c-soft))] text-left min-h-[44px]">
                     <FileArchive className="w-4 h-4 text-[hsl(var(--c-accent))]" /> ZIP / image files
                   </button>
-                  <button onClick={() => { setBrowseOpen(false); folderRef.current?.click(); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[hsl(var(--c-text))] hover:bg-[hsl(var(--c-soft))] text-left border-t border-[hsl(var(--c-border))]">
+                  <button onClick={() => { setBrowseOpen(false); folderRef.current?.click(); }} className="w-full flex items-center gap-2.5 px-3 py-3 text-sm text-[hsl(var(--c-text))] hover:bg-[hsl(var(--c-soft))] text-left border-t border-[hsl(var(--c-border))] min-h-[44px]">
                     <FolderOpen className="w-4 h-4 text-[hsl(var(--c-accent))]" /> Device folder (subfolders → chapters)
                   </button>
                 </div>

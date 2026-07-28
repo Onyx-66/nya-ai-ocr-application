@@ -6,6 +6,7 @@ import MarkerSettings from '@/components/batch/MarkerSettings';
 import DefaultSettings from '@/components/batch/DefaultSettings';
 import DriveConnection from '@/components/batch/DriveConnection';
 import ExportTemplateManager from '@/components/batch/ExportTemplateManager';
+import MobileSelect from '@/components/ui/MobileSelect';
 import AccountSection from '@/components/batch/AccountSection';
 import AdminPanel from '@/components/batch/AdminPanel';
 
@@ -40,9 +41,7 @@ export default function Settings() {
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-dim))] mb-1.5"><Type className="w-3.5 h-3.5" /> Font family</label>
-              <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg px-3 py-2 text-sm text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))]">
-                {FONTS.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
-              </select>
+              <MobileSelect value={fontFamily} onChange={setFontFamily} options={FONTS.map((f) => ({ value: f.id, label: f.label }))} placeholder="Font family" className="bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg px-3 py-2 text-sm text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))]" />
             </div>
             <div>
               <label className="text-xs text-[hsl(var(--c-dim))] mb-1.5 block">Font size · {Math.round(fontScale * 100)}%</label>

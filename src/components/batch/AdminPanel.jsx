@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2, Plus, ShieldCheck } from 'lucide-react';
+import MobileSelect from '@/components/ui/MobileSelect';
 
 const ROLES = [
   { id: 'admin', label: 'Administrator' },
@@ -66,13 +67,13 @@ export default function AdminPanel() {
                 <p className="text-sm text-[hsl(var(--c-text))] truncate">{u.email}</p>
                 <p className="text-xs text-[hsl(var(--c-dim))]">Credits: <span className="text-[hsl(var(--c-text-soft))]">{u.credits ?? 0}</span></p>
               </div>
-              <select
+              <MobileSelect
                 value={u.role || 'user'}
-                onChange={(e) => setRole(u.id, e.target.value)}
+                onChange={(v) => setRole(u.id, v)}
+                options={ROLES.map((r) => ({ value: r.id, label: r.label }))}
+                placeholder="Role"
                 className="bg-[hsl(var(--c-card))] border border-[hsl(var(--c-border))] rounded-md px-2 py-1.5 text-xs text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))]"
-              >
-                {ROLES.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-              </select>
+              />
               <div className="flex items-center gap-1">
                 <input
                   type="text"

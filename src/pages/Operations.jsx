@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { subscribe, clearFinished, removeOp, requestStopAll, isStopRequested } from '@/lib/operations';
+import { subscribe, clearFinished, removeOp, requestStopAll, isStopRequested, getHistory } from '@/lib/operations';
 import { Activity, Loader2, CheckCircle2, XCircle, Trash2, Sparkles, Languages, Square, Clock, ListChecks } from 'lucide-react';
+import PullToRefresh from '@/components/PullToRefresh';
 
 const elapsed = (s, e) => {
   const ms = (e || Date.now()) - s;
@@ -23,9 +24,11 @@ export default function Operations() {
   const avgSec = finished.length ? Math.round(finished.reduce((a, o) => a + ((o.finishedAt || now) - o.startedAt), 0) / finished.length / 1000) : 0;
 
   const stopRequestedNow = isStopRequested();
+  const refresh = async () => { setOps(getHistory()); };
 
   return (
-    <div className="p-4 sm:p-6 md:p-10 max-w-3xl mx-auto">
+    <PullToRefresh onRefresh={refresh} className="max-w-3xl mx-auto">
+    <div className="p-4 sm:p-6 md:p-10">
       <div className="flex items-center justify-between gap-3 mb-1">
         <h1 className="text-2xl font-heading font-semibold text-[hsl(var(--c-text))]">Operations</h1>
         {ops.length > 0 && (
@@ -123,5 +126,6 @@ export default function Operations() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

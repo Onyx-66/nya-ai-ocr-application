@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2, RefreshCw, Link2 } from 'lucide-react';
+import MobileSelect from '@/components/ui/MobileSelect';
 
 function extractId(link) {
   if (!link) return '';
@@ -48,17 +49,14 @@ export default function DriveFolderPicker({ value, onChange, placeholder = 'Root
         />
       </div>
       <div className="flex items-center gap-2">
-        <select
+        <MobileSelect
           value={folders.some((f) => f.id === value) ? value : ''}
-          onChange={(e) => { onChange(e.target.value || null); setLink(''); }}
+          onChange={(v) => { onChange(v || null); setLink(''); }}
+          options={[{ value: '', label: value ? 'Custom folder (from link)' : placeholder }, ...folders.map((f) => ({ value: f.id, label: f.name }))]}
+          placeholder={placeholder}
           disabled={loading}
           className="flex-1 bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg px-3 py-2 text-sm text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))] disabled:opacity-50"
-        >
-          <option value="">{value ? 'Custom folder (from link)' : placeholder}</option>
-          {folders.map((f) => (
-            <option key={f.id} value={f.id}>{f.name}</option>
-          ))}
-        </select>
+        />
         <button
           onClick={load}
           disabled={loading}
