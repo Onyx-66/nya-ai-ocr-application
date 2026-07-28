@@ -68,9 +68,7 @@ export default function Library() {
         <h1 className="text-2xl font-heading font-semibold text-[hsl(var(--c-text))]">Library</h1>
         <span className="text-sm text-[hsl(var(--c-dim))]">{isHistory ? 'History' : `${entries.length} saved`}</span>
       </div>
-      <p className="text-[hsl(var(--c-dim))] text-sm mb-6">
-        Outputs are saved to <code className="font-mono text-[hsl(var(--c-text-soft))]">nya ai ocr/library/[Serie]/...</code> on your device.
-      </p>
+
 
       {/* Connection */}
       <section className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4 sm:p-5 mb-4">
@@ -80,7 +78,7 @@ export default function Library() {
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-medium text-[hsl(var(--c-text))]">{connected ? 'Device folder connected' : 'Connect a device folder'}</h2>
-            <p className="text-xs text-[hsl(var(--c-dim))]">{connected ? 'Saves write into "nya ai ocr/library".' : fsSupported ? 'Pick a folder once to save the structured library.' : "Your browser can't pick folders — use Download ZIP."}</p>
+            <p className="text-xs text-[hsl(var(--c-dim))]">{connected ? 'Saves write into "nya ai ocr/library".' : 'Pick a folder once to save the structured library.'}</p>
           </div>
           {connected ? (
             <button onClick={disconnect} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-dim))] hover:text-rose-400 shrink-0"><Unplug className="w-4 h-4" /><span className="hidden sm:inline">Disconnect</span></button>
@@ -134,7 +132,7 @@ export default function Library() {
             <div className="space-y-2 mb-4">
               <div className="flex gap-2">
                 <button onClick={saveAll} disabled={busy || !filtered.length} className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] disabled:opacity-40 text-white rounded-lg px-3 py-2 text-sm font-medium">
-                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderDown className="w-4 h-4" />}Save all to device
+                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderDown className="w-4 h-4" />}Save
                 </button>
                 <button onClick={dlZip} disabled={busy || !filtered.length} className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-40 text-[hsl(var(--c-text))] rounded-lg px-3 py-2 text-sm font-medium">
                   <Download className="w-4 h-4" />Download ZIP
