@@ -63,33 +63,41 @@ function flagImg(code, name) {
 }
 
 export default function LanguageSelect({ value, onChange }) {
-  const [text, setText] = useState(value || 'English');
+  // The input is always a clean, empty field ready to type. The committed
+  // selection (`value`) is reflected only by its flag, not by text. If the
+  // user types nothing, the latest selection is kept.
+  const [text, setText] = useState('');
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-
-  useEffect(() => { setText(value || ''); }, [value]);
+  const current = LANGUAGES.find((l) => l.name.toLowerCase() === (value || '').toLowerCase());
 
   useEffect(() => {
-    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setText(''); } };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
   const q = (text || '').toLowerCase();
   const filtered = q ? LANGUAGES.filter((l) => l.name.toLowerCase().includes(q)) : LANGUAGES;
-  const current = LANGUAGES.find((l) => l.name.toLowerCase() === q);
 
-  const commit = (v) => { setText(v); onChange(v); };
+  const commit = (v) => { setText(''); onChange(v); setOpen(false); };
 
   return (
     <div className="relative" ref={ref}>
       <div className="flex items-center gap-2 bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg px-3 py-2 focus-within:border-[hsl(var(--c-accent))]">
-        {flagImg(current?.code, text)}
+        {flagImg(current?.code, current?.name)}
         <input
           value={text}
-          onChange={(e) => { setText(e.target.value); onChange(e.target.value); }}
+          onChange={(e) => setText(e.target.value)}
           onFocus={() => setOpen(true)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { setOpen(false); commit(text.trim()); } }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              const m = filtered[0];
+              const v = m ? m.name : text.trim();
+              if (v) commit(v);
+            }
+            if (e.key === 'Escape') { setText(''); setOpen(false); }
+          }}
           placeholder="Type or choose a language"
           className="flex-1 min-w-0 bg-transparent text-sm text-[hsl(var(--c-text))] placeholder:text-[hsl(var(--c-dim))] focus:outline-none"
         />
@@ -99,7 +107,7 @@ export default function LanguageSelect({ value, onChange }) {
           {filtered.slice(0, 30).map((l) => (
             <button
               key={l.name}
-              onClick={() => { commit(l.name); setOpen(false); }}
+              onClick={() => commit(l.name)}
               className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[hsl(var(--c-text))] hover:bg-[hsl(var(--c-soft))] text-left"
             >
               {flagImg(l.code, l.name)}

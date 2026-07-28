@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
-import { ScanText, Settings as SettingsIcon, Library as LibraryIcon, Activity, Zap } from 'lucide-react';
+import { ScanText, Settings as SettingsIcon, Library as LibraryIcon, Activity, BarChart3, Zap } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
@@ -12,6 +12,7 @@ const navItems = [
   { to: '/', label: 'Workspace', icon: ScanText },
   { to: '/library', label: 'Library', icon: LibraryIcon },
   { to: '/operations', label: 'Operations', icon: Activity },
+  { to: '/usage', label: 'Usage', icon: BarChart3 },
   { to: '/settings', label: 'Settings', icon: SettingsIcon }
 ];
 

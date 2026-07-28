@@ -10,10 +10,12 @@ import GlobalOptions from '@/components/batch/GlobalOptions';
 import ChapterCard from '@/components/batch/ChapterCard';
 import ImageLightbox from '@/components/batch/ImageLightbox';
 import ImportModal from '@/components/batch/ImportModal';
-import { Trash2, Sparkles, Zap, Play, Square } from 'lucide-react';
+import { loadWorkspace, saveWorkspace } from '@/lib/workspaceState';
+import { logUsage } from '@/lib/usage';
+import { Trash2, Sparkles, Zap, Play, Square, ChevronsDown, ChevronsUp } from 'lucide-react';
 
 const newChapter = (overrides = {}) => ({
-  id: crypto.randomUUID(), title: '', images: [],
+  id: crypto.randomUUID(), title: '', images: [], expanded: true,
   ocrStatus: 'idle', ocrOutput: '', ocrError: '',
   translateStatus: 'idle', translateOutput: '', translateError: '',
   ...overrides
@@ -38,15 +40,35 @@ export default function BatchWorkspace() {
   useEffect(() => { setCredits(user?.credits ?? null); }, [user]);
   const hasCredits = (credits ?? 0) >= 1;
 
-  // Apply defaults from settings on mount so the options reflect them.
+  // Restore persisted workspace (chapters survive navigation away) or apply defaults.
   useEffect(() => {
-    const dd = getDefaults();
-    setSerieTitle(dd.serie); setFormat(dd.format); setTranslateEnabled(dd.translate);
-    setTargetLanguage(dd.language); setEmptyLine(dd.emptyLine);
-    const t = getActiveTemplate();
-    if (t) applyTemplate(t);
+    const saved = loadWorkspace();
+    if (saved && saved.chapters && saved.chapters.length) {
+      setChapters(saved.chapters.map((c) => ({ ...c, expanded: c.expanded !== false })));
+      if (saved.serieTitle != null) setSerieTitle(saved.serieTitle);
+      if (saved.format) setFormat(saved.format);
+      if (saved.translateEnabled != null) setTranslateEnabled(saved.translateEnabled);
+      if (saved.targetLanguage) setTargetLanguage(saved.targetLanguage);
+      if (saved.emptyLine != null) setEmptyLine(saved.emptyLine);
+      if (saved.uploadFolder) setUploadFolder(saved.uploadFolder);
+    } else {
+      const dd = getDefaults();
+      setSerieTitle(dd.serie); setFormat(dd.format); setTranslateEnabled(dd.translate);
+      setTargetLanguage(dd.language); setEmptyLine(dd.emptyLine);
+      const t = getActiveTemplate();
+      if (t) applyTemplate(t);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Persist workspace state so imported chapters survive navigation.
+  useEffect(() => {
+    saveWorkspace({ chapters, serieTitle, format, translateEnabled, targetLanguage, emptyLine, uploadFolder });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapters, serieTitle, format, translateEnabled, targetLanguage, emptyLine, uploadFolder]);
+
+  const allExpanded = chapters.length > 0 && chapters.every((c) => c.expanded !== false);
+  const toggleAllExpanded = () => setChapters((prev) => prev.map((c) => ({ ...c, expanded: !allExpanded })));
 
   const applyTemplate = (t) => {
     if (!t) return;
@@ -90,7 +112,8 @@ export default function BatchWorkspace() {
       const out = (res.data && res.data.fullOutput) || '';
       update(id, { ocrStatus: 'done', ocrOutput: out });
       addEntry({ id: `${id}-ocr`, serie: serieTitle.trim() || ch.title.trim() || 'Untitled', chapter: idx + 1, type: 'ocr', language: null, format, content: out, created: Date.now() });
-      updateOp(opId, { status: 'done', progress: 100, finishedAt: Date.now() });
+      updateOp(opId, { status: 'done', progress: 100, finishedAt: Date.now(), entryId: `${id}-ocr` });
+      logUsage({ type: 'ocr', series: serieTitle.trim() || ch.title.trim() || 'Untitled' });
       await spend();
     } catch (e) {
       update(id, { ocrStatus: 'error', ocrError: e.message || 'OCR failed' });
@@ -110,7 +133,8 @@ export default function BatchWorkspace() {
       const out = (res.data && res.data.translated) || '';
       update(id, { translateStatus: 'done', translateOutput: out });
       addEntry({ id: `${id}-tl`, serie: serieTitle.trim() || ch.title.trim() || 'Untitled', chapter: idx + 1, type: 'translation', language: targetLanguage, format, content: out, created: Date.now() });
-      updateOp(opId, { status: 'done', progress: 100, finishedAt: Date.now() });
+      updateOp(opId, { status: 'done', progress: 100, finishedAt: Date.now(), entryId: `${id}-tl` });
+      logUsage({ type: 'translation', series: serieTitle.trim() || ch.title.trim() || 'Untitled' });
       await spend();
     } catch (e) {
       update(id, { translateStatus: 'error', translateError: e.message || 'Translation failed' });
@@ -192,6 +216,12 @@ export default function BatchWorkspace() {
             {running ? <><Square className="w-4 h-4" /> Stop operation</> : <><Play className="w-4 h-4" /> Start operation</>}
           </button>
 
+          {chapters.length > 0 && (
+            <button onClick={toggleAllExpanded} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-accent))] hover:opacity-80">
+              {allExpanded ? <><ChevronsUp className="w-3.5 h-3.5" /> Hide all chapters</> : <><ChevronsDown className="w-3.5 h-3.5" /> Expand all chapters</>}
+            </button>
+          )}
+
           {/* Chapters */}
           {chapters.length === 0 && (
             <div className="rounded-xl border border-dashed border-[hsl(var(--c-border))] p-10 text-center text-[hsl(var(--c-dim))]">
@@ -208,6 +238,7 @@ export default function BatchWorkspace() {
               uploadFolder={uploadFolder} canRun={hasCredits}
               onUpdate={update} onRemove={removeChapter}
               onRunOcr={runOcr} onTranslate={translate}
+              onToggleExpand={(cid) => setChapters((prev) => prev.map((ch) => (ch.id === cid ? { ...ch, expanded: !(ch.expanded !== false) } : ch)))}
               onPreview={(images, idx) => setLightbox({ images, index: idx })}
             />
           ))}

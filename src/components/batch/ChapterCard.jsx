@@ -6,9 +6,9 @@ import { ChevronDown, Sparkles, Languages, Plus, Trash2, Loader2, Images } from 
 
 export default function ChapterCard({
   chapter, index, serieTitle, format, translateEnabled, targetLanguage, uploadFolder,
-  canRun, onUpdate, onRemove, onRunOcr, onTranslate, onPreview
+  canRun, onUpdate, onRemove, onRunOcr, onTranslate, onToggleExpand, onPreview
 }) {
-  const [expanded, setExpanded] = useState(true);
+  const expanded = chapter.expanded !== false;
   const [showUploader, setShowUploader] = useState(chapter.images.length === 0);
   const [activeTab, setActiveTab] = useState('ocr');
 
@@ -24,7 +24,7 @@ export default function ChapterCard({
   return (
     <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] overflow-hidden">
       <div className="flex items-center gap-3 p-3 sm:p-4">
-        <button onClick={() => setExpanded((e) => !e)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] shrink-0">
+        <button onClick={() => onToggleExpand(chapter.id)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] shrink-0">
           <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : '-rotate-90'}`} />
         </button>
         <input

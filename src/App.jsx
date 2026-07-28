@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import Settings from './pages/Settings';
 import Library from './pages/Library';
 import Operations from './pages/Operations';
+import Usage from './pages/Usage';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -49,6 +50,7 @@ const AuthenticatedApp = () => {
           <Route path="/" element={<Home />} />
           <Route path="/library" element={<Library />} />
           <Route path="/operations" element={<Operations />} />
+          <Route path="/usage" element={<Usage />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>
