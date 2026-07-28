@@ -31,3 +31,9 @@ export function clearFinished() {
   ops = ops.filter((o) => o.status === 'running');
   emit();
 }
+
+// Stop-all signal: the workspace polls isStopRequested() inside its run loop.
+let stopRequested = false;
+export function requestStopAll() { stopRequested = true; emit(); }
+export function isStopRequested() { return stopRequested; }
+export function clearStop() { stopRequested = false; }

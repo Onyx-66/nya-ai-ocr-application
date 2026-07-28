@@ -1,37 +1,22 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Loader2, CheckCircle2, XCircle, Cloud, Palette, Type, ListChecks, UserCircle, Sliders, Plus } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, Cloud, Palette, Type, ListChecks, UserCircle, Sliders, Layers, RefreshCw } from 'lucide-react';
 import { useTheme, THEMES, FONTS } from '@/lib/ThemeContext';
 import SettingsSection from '@/components/SettingsSection';
 import MarkerSettings from '@/components/batch/MarkerSettings';
 import DefaultSettings from '@/components/batch/DefaultSettings';
 import DriveFolderButton from '@/components/batch/DriveFolderButton';
+import ExportTemplateManager from '@/components/batch/ExportTemplateManager';
+import AccountSection from '@/components/batch/AccountSection';
 import AdminPanel from '@/components/batch/AdminPanel';
 
-const ROLE_LABEL = { admin: 'Administrator', premium: 'Premium user', user: 'User' };
-
 export default function Settings() {
-  const { user, checkUserAuth } = useAuth();
+  const { user } = useAuth();
   const [status, setStatus] = useState('checking');
   const [email, setEmail] = useState(null);
   const [folderId, setFolderId] = useState(() => localStorage.getItem('driveFolder') || null);
-  const [topUp, setTopUp] = useState('');
-  const [topUpMsg, setTopUpMsg] = useState(null);
   const { theme, setTheme, fontFamily, setFontFamily, fontScale, setFontScale } = useTheme();
-
-  const initials = (user?.email || '?').slice(0, 1).toUpperCase();
-
-  const addCredits = async () => {
-    const amt = Number(topUp) || 0;
-    if (!amt) return;
-    try {
-      await base44.auth.updateMe({ credits: (user?.credits ?? 0) + amt });
-      setTopUp(''); setTopUpMsg(`Added ${amt} credits`);
-      setTimeout(() => setTopUpMsg(null), 1800);
-      await checkUserAuth();
-    } catch (e) { setTopUpMsg(e.message || 'Could not add credits'); }
-  };
 
   const check = async () => {
     setStatus('checking');
@@ -54,38 +39,10 @@ export default function Settings() {
       <p className="text-[hsl(var(--c-dim))] text-sm mb-6">Tap any section to expand or collapse it.</p>
 
       <div className="space-y-4">
-        {/* Account */}
         <SettingsSection icon={UserCircle} title="Account" subtitle="Profile, credits and top-up" defaultOpen>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-[hsl(var(--c-accent))]/15 flex items-center justify-center text-[hsl(var(--c-accent))] font-semibold text-lg shrink-0">{initials}</div>
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-[hsl(var(--c-text))] truncate">{user?.email || '—'}</p>
-              <span className="inline-flex items-center mt-1 text-xs px-2 py-0.5 rounded-full bg-[hsl(var(--c-accent))]/15 text-[hsl(var(--c-accent))]">{ROLE_LABEL[user?.role] || user?.role || '—'}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 rounded-lg border border-[hsl(var(--c-border))] bg-[hsl(var(--c-input))] px-4 py-3 mb-3">
-            <span className="text-2xl">⚡</span>
-            <div className="min-w-0">
-              <p className="text-2xl font-semibold text-[hsl(var(--c-text))] leading-none">{user?.credits ?? '…'}</p>
-              <p className="text-xs text-[hsl(var(--c-dim))] mt-1">credits · 1 per OCR / translation · +4 daily login gift</p>
-            </div>
-          </div>
-
-          <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Top up credits</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="number" value={topUp} onChange={(e) => setTopUp(e.target.value)} placeholder="Amount"
-              className="w-32 bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg px-3 py-2 text-sm text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))]"
-            />
-            <button onClick={addCredits} className="flex items-center gap-1.5 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] text-white rounded-lg px-4 py-2 text-sm font-medium">
-              <Plus className="w-4 h-4" /> Add credits
-            </button>
-            {topUpMsg && <span className="text-xs text-emerald-400 truncate">{topUpMsg}</span>}
-          </div>
+          <AccountSection />
         </SettingsSection>
 
-        {/* Appearance */}
         <SettingsSection icon={Palette} title="Appearance" subtitle="Theme, fonts and text size">
           <label className="block text-xs text-[hsl(var(--c-dim))] mb-2">Theme</label>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-5">
@@ -114,31 +71,32 @@ export default function Settings() {
           </div>
         </SettingsSection>
 
-        {/* Workspace defaults */}
+        <SettingsSection icon={Layers} title="Export templates" subtitle="One-click format & styling layouts">
+          <ExportTemplateManager />
+        </SettingsSection>
+
         <SettingsSection icon={Sliders} title="Workspace defaults" subtitle="Applied to new sessions">
           <DefaultSettings />
         </SettingsSection>
 
-        {/* OCR signs */}
         <SettingsSection icon={ListChecks} title="OCR signs" subtitle="Markers for each text type">
           <MarkerSettings />
         </SettingsSection>
 
-        {/* Google Drive */}
-        <SettingsSection icon={Cloud} title="Google Drive" subtitle="Connection and default upload folder">
+        <SettingsSection icon={Cloud} title="Google Drive" subtitle="Connection and upload folder">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-[hsl(var(--c-soft))] flex items-center justify-center shrink-0">
               {status === 'checking' ? <Loader2 className="w-5 h-5 animate-spin text-[hsl(var(--c-dim))]" />
                 : status === 'connected' ? <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                 : <XCircle className="w-5 h-5 text-rose-400" />}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-[hsl(var(--c-text))]">{status === 'connected' ? 'Connected' : status === 'checking' ? 'Checking…' : 'Not connected'}</p>
               <p className="text-xs text-[hsl(var(--c-dim))] truncate">{status === 'connected' && email ? email : 'Used to read source folders and upload output files.'}</p>
             </div>
-            {status === 'disconnected' && (
-              <button onClick={check} className="ml-auto text-xs bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] text-white rounded-lg px-3 py-1.5 font-medium shrink-0">Recheck</button>
-            )}
+            <button onClick={check} title="Re-check connection" className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-3 py-1.5 shrink-0">
+              <RefreshCw className="w-3.5 h-3.5" /> Recheck
+            </button>
           </div>
           {status === 'connected' && (
             <div className="border-t border-[hsl(var(--c-border))] pt-4">
@@ -146,6 +104,7 @@ export default function Settings() {
               <DriveFolderButton value={folderId} onChange={saveFolder} />
             </div>
           )}
+          <p className="text-[11px] text-[hsl(var(--c-dim))] mt-3">To link a different Google account, ask in the builder chat — “reconnect Google Drive” — and approve the prompt (one click).</p>
         </SettingsSection>
 
         {user?.role === 'admin' && (

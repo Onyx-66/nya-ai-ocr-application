@@ -18,6 +18,10 @@ export function addEntry(e) {
 }
 export function removeEntry(id) { saveAll(getLibrary().filter((x) => x.id !== id)); }
 export function clearLibrary() { saveAll([]); }
+export function markSaved(ids) {
+  const set = new Set(ids);
+  saveAll(getLibrary().map((x) => (set.has(x.id) ? { ...x, saved: true } : x)));
+}
 
 /* ---------- IndexedDB for the directory handle ---------- */
 function openDb() {
@@ -97,6 +101,7 @@ export async function saveToLibrary(entries) {
     }
     saved++;
   }
+  markSaved(entries.map((e) => e.id));
   return { saved };
 }
 

@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { getMarkers } from '@/lib/markers';
+import { getMarkers, saveMarkers } from '@/lib/markers';
 import { getDefaults } from '@/lib/appDefaults';
+import { getActiveTemplate, ensureDefaultTemplates } from '@/lib/exportTemplates';
 import { addEntry } from '@/lib/library';
-import { addOp, updateOp } from '@/lib/operations';
+import { addOp, updateOp, isStopRequested, clearStop, requestStopAll } from '@/lib/operations';
 import GlobalOptions from '@/components/batch/GlobalOptions';
 import ChapterCard from '@/components/batch/ChapterCard';
 import ImageLightbox from '@/components/batch/ImageLightbox';
-import BatchImport from '@/components/batch/BatchImport';
-import { Trash2, Sparkles, Languages, Loader2, Zap } from 'lucide-react';
+import ImportModal from '@/components/batch/ImportModal';
+import { Trash2, Sparkles, Zap, Play, Square } from 'lucide-react';
 
 const newChapter = (overrides = {}) => ({
   id: crypto.randomUUID(), title: '', images: [],
@@ -21,6 +22,7 @@ const newChapter = (overrides = {}) => ({
 export default function BatchWorkspace() {
   const { user, checkUserAuth } = useAuth();
   const d = getDefaults();
+  ensureDefaultTemplates();
   const [chapters, setChapters] = useState([]);
   const [serieTitle, setSerieTitle] = useState(d.serie);
   const [format, setFormat] = useState(d.format);
@@ -29,19 +31,35 @@ export default function BatchWorkspace() {
   const [emptyLine, setEmptyLine] = useState(d.emptyLine);
   const [uploadFolder, setUploadFolder] = useState(() => localStorage.getItem('driveFolder') || null);
   const [lightbox, setLightbox] = useState({ images: [], index: null });
-  const [runAllBusy, setRunAllBusy] = useState(false);
-  const [transAllBusy, setTransAllBusy] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [running, setRunning] = useState(false);
   const [credits, setCredits] = useState(null);
 
   useEffect(() => { setCredits(user?.credits ?? null); }, [user]);
-
   const hasCredits = (credits ?? 0) >= 1;
+
+  // Apply defaults from settings on mount so the options reflect them.
+  useEffect(() => {
+    const dd = getDefaults();
+    setSerieTitle(dd.serie); setFormat(dd.format); setTranslateEnabled(dd.translate);
+    setTargetLanguage(dd.language); setEmptyLine(dd.emptyLine);
+    const t = getActiveTemplate();
+    if (t) applyTemplate(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const applyTemplate = (t) => {
+    if (!t) return;
+    setFormat(t.format); setEmptyLine(t.emptyLine); saveMarkers(t.markers);
+  };
 
   const onField = (k, v) => {
     if (k === 'serieTitle') setSerieTitle(v);
     else if (k === 'format') setFormat(v);
     else if (k === 'translateEnabled') setTranslateEnabled(v);
     else if (k === 'targetLanguage') setTargetLanguage(v);
+    else if (k === 'emptyLine') setEmptyLine(v);
+    else if (k === 'template') applyTemplate(v);
     else if (k === 'uploadFolder') { setUploadFolder(v); localStorage.setItem('driveFolder', v || ''); }
   };
 
@@ -53,14 +71,14 @@ export default function BatchWorkspace() {
   const spend = async () => {
     const next = (credits ?? 0) - 1;
     setCredits(next);
-    try { await base44.auth.updateMe({ credits: next }); await checkUserAuth(); } catch (_) { /* ignore */ }
+    try { await base44.auth.updateMe({ credits: next }); await checkUserAuth(); } catch (_) {}
   };
 
   const runOcr = async (id) => {
     const idx = chapters.findIndex((c) => c.id === id);
     const ch = chapters[idx];
     if (!ch || !ch.images.length) return;
-    if (!hasCredits) { update(id, { ocrError: 'Not enough credits — add credits in Settings' }); return; }
+    if ((credits ?? 0) < 1) { update(id, { ocrError: 'Not enough credits — add credits in Settings' }); return; }
     update(id, { ocrStatus: 'running', ocrError: '', ocrOutput: '' });
     const opId = addOp({ label: `OCR · ${ch.title.trim() || 'Chapter ' + (idx + 1)}`, type: 'ocr' });
     try {
@@ -84,7 +102,7 @@ export default function BatchWorkspace() {
     const idx = chapters.findIndex((c) => c.id === id);
     const ch = chapters[idx];
     if (!ch || !ch.ocrOutput) return;
-    if (!hasCredits) { update(id, { translateError: 'Not enough credits — add credits in Settings' }); return; }
+    if ((credits ?? 0) < 1) { update(id, { translateError: 'Not enough credits — add credits in Settings' }); return; }
     update(id, { translateStatus: 'running', translateError: '', translateOutput: '' });
     const opId = addOp({ label: `Translate · ${ch.title.trim() || 'Chapter ' + (idx + 1)} · ${targetLanguage}`, type: 'translation' });
     try {
@@ -100,45 +118,45 @@ export default function BatchWorkspace() {
     }
   };
 
-  const runAllOcr = async () => {
-    if (!hasCredits) return;
-    const targets = chapters.filter((c) => c.images.length);
-    if (!targets.length) return;
-    setRunAllBusy(true);
-    const aggId = addOp({ label: `OCR · ${targets.length} chapter${targets.length > 1 ? 's' : ''}`, type: 'ocr', progress: 0, total: targets.length, completed: 0 });
+  const startOperation = async () => {
+    if ((credits ?? 0) < 1) return;
+    const ocrTargets = chapters.filter((c) => c.images.length);
+    if (!ocrTargets.length) return;
+    setRunning(true); clearStop();
+    const aggId = addOp({ label: `Operation · ${ocrTargets.length} chapter${ocrTargets.length > 1 ? 's' : ''}`, type: 'ocr', progress: 0, total: ocrTargets.length, completed: 0 });
     let completed = 0, remaining = credits ?? 0;
-    for (const c of targets) {
+    for (const c of ocrTargets) {
+      if (isStopRequested()) break;
       if (remaining < 1) break;
-      await runOcr(c.id);
-      remaining--; completed++;
-      updateOp(aggId, { completed, progress: Math.round((completed / targets.length) * 100) });
+      await runOcr(c.id); remaining--; completed++;
+      updateOp(aggId, { completed, progress: Math.round((completed / ocrTargets.length) * 100) });
     }
-    updateOp(aggId, { status: 'done', progress: 100, finishedAt: Date.now() });
-    setRunAllBusy(false);
-  };
-  const translateAll = async () => {
-    if (!hasCredits) return;
-    const targets = chapters.filter((c) => c.ocrOutput);
-    if (!targets.length) return;
-    setTransAllBusy(true);
-    const aggId = addOp({ label: `Translate · ${targets.length} chapter${targets.length > 1 ? 's' : ''} · ${targetLanguage}`, type: 'translation', progress: 0, total: targets.length, completed: 0 });
-    let completed = 0, remaining = credits ?? 0;
-    for (const c of targets) {
-      if (remaining < 1) break;
-      await translate(c.id);
-      remaining--; completed++;
-      updateOp(aggId, { completed, progress: Math.round((completed / targets.length) * 100) });
+    // Translate pass if enabled and not stopped and credits remain
+    if (translateEnabled && !isStopRequested() && remaining >= 1) {
+      const tlTargets = chapters.filter((c) => c.ocrOutput && c.translateStatus !== 'done');
+      if (tlTargets.length) {
+        const tlId = addOp({ label: `Translate · ${tlTargets.length} chapter${tlTargets.length > 1 ? 's' : ''} · ${targetLanguage}`, type: 'translation', progress: 0, total: tlTargets.length, completed: 0 });
+        let tdone = 0;
+        for (const c of tlTargets) {
+          if (isStopRequested()) break;
+          if (remaining < 1) break;
+          await translate(c.id); remaining--; tdone++;
+          updateOp(tlId, { completed: tdone, progress: Math.round((tdone / tlTargets.length) * 100) });
+        }
+        updateOp(tlId, { status: 'done', progress: 100, finishedAt: Date.now() });
+      }
     }
-    updateOp(aggId, { status: 'done', progress: 100, finishedAt: Date.now() });
-    setTransAllBusy(false);
+    updateOp(aggId, { status: isStopRequested() ? 'done' : 'done', progress: 100, finishedAt: Date.now() });
+    clearStop(); setRunning(false);
   };
 
+  const requestStop = () => { requestStopAll(); setRunning(false); };
+
   const hasImages = chapters.some((c) => c.images.length > 0);
-  const hasOcr = chapters.some((c) => c.ocrOutput);
 
   return (
     <div className="p-4 sm:p-6 md:p-10">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between gap-3 mb-1">
           <h1 className="text-2xl font-heading font-semibold text-[hsl(var(--c-text))]">Batch OCR Workspace</h1>
           <span className="flex items-center gap-1.5 text-sm text-[hsl(var(--c-dim))] shrink-0">
@@ -146,69 +164,58 @@ export default function BatchWorkspace() {
             <span className="font-semibold text-[hsl(var(--c-text))]">{credits ?? '…'}</span> credits
           </span>
         </div>
-        <p className="text-[hsl(var(--c-dim))] text-sm mb-6">
-          Add multiple chapters, queue images for each, run OCR per chapter or all at once, and optionally translate.
-        </p>
+        <p className="text-[hsl(var(--c-dim))] text-sm mb-6">Set your options, import chapters, then start the operation.</p>
 
-        <div className="grid lg:grid-cols-[1fr_340px] gap-6 items-start">
-          <div className="space-y-4 order-1 lg:order-1 min-w-0">
-            <div className="flex flex-wrap gap-2 items-start">
-              {chapters.length > 0 && <BatchImport onChapters={addChapters} />}
-              <button onClick={addChapter} className="flex items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg px-3 py-2 text-sm font-medium">
-                <Trash2 className="w-4 h-4" /> Empty chapter
-              </button>
-              <button
-                onClick={runAllOcr}
-                disabled={runAllBusy || !hasImages || !hasCredits}
-                className="flex items-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg px-3 py-2 text-sm font-medium"
-              >
-                {runAllBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                Run all OCR
-              </button>
-              {translateEnabled && (
-                <button
-                  onClick={translateAll}
-                  disabled={transAllBusy || !hasOcr || !hasCredits}
-                  className="flex items-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-40 disabled:cursor-not-allowed text-[hsl(var(--c-text))] rounded-lg px-3 py-2 text-sm font-medium"
-                >
-                  {transAllBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Languages className="w-4 h-4" />}
-                  Translate all
-                </button>
-              )}
-            </div>
+        <div className="space-y-4">
+          {/* Options — first */}
+          <GlobalOptions
+            serieTitle={serieTitle} format={format}
+            translateEnabled={translateEnabled} targetLanguage={targetLanguage}
+            emptyLine={emptyLine} uploadFolder={uploadFolder}
+            onField={onField}
+          />
 
-            {chapters.length === 0 && (
-              <BatchImport onChapters={addChapters} defaultOpen />
-            )}
-
-            {chapters.map((c, i) => (
-              <ChapterCard
-                key={c.id} chapter={c} index={i}
-                serieTitle={serieTitle} format={format}
-                translateEnabled={translateEnabled} targetLanguage={targetLanguage}
-                uploadFolder={uploadFolder} canRun={hasCredits}
-                onUpdate={update} onRemove={removeChapter}
-                onRunOcr={runOcr} onTranslate={translate}
-                onPreview={(images, idx) => setLightbox({ images, index: idx })}
-              />
-            ))}
+          {/* Action buttons — under options */}
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => setImportOpen(true)} className="flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] text-white rounded-lg px-3 py-2.5 text-sm font-medium">
+              <Sparkles className="w-4 h-4" /> Import
+            </button>
+            <button onClick={addChapter} className="flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg px-3 py-2.5 text-sm font-medium">
+              <Trash2 className="w-4 h-4" /> Empty chapter
+            </button>
           </div>
+          <button
+            onClick={running ? requestStop : startOperation}
+            disabled={!running && (!hasImages || !hasCredits)}
+            className={`w-full flex items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed text-white ${running ? 'bg-rose-500 hover:bg-rose-600' : 'bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))]'}`}
+          >
+            {running ? <><Square className="w-4 h-4" /> Stop operation</> : <><Play className="w-4 h-4" /> Start operation</>}
+          </button>
 
-          <div className="order-2 lg:order-2 lg:sticky lg:top-6">
-            <GlobalOptions
+          {/* Chapters */}
+          {chapters.length === 0 && (
+            <div className="rounded-xl border border-dashed border-[hsl(var(--c-border))] p-10 text-center text-[hsl(var(--c-dim))]">
+              <Sparkles className="w-8 h-8 mx-auto mb-2" />
+              <p className="text-sm">No chapters yet — click <span className="text-[hsl(var(--c-text))] font-medium">Import</span> to add images, or add an empty chapter.</p>
+            </div>
+          )}
+
+          {chapters.map((c, i) => (
+            <ChapterCard
+              key={c.id} chapter={c} index={i}
               serieTitle={serieTitle} format={format}
               translateEnabled={translateEnabled} targetLanguage={targetLanguage}
-              uploadFolder={uploadFolder} onField={onField}
+              uploadFolder={uploadFolder} canRun={hasCredits}
+              onUpdate={update} onRemove={removeChapter}
+              onRunOcr={runOcr} onTranslate={translate}
+              onPreview={(images, idx) => setLightbox({ images, index: idx })}
             />
-          </div>
+          ))}
         </div>
       </div>
 
-      <ImageLightbox
-        images={lightbox.images} index={lightbox.index}
-        onClose={() => setLightbox({ images: [], index: null })}
-        onNavigate={(i) => setLightbox((s) => ({ ...s, index: i }))}
-      />
+      <ImportModal open={importOpen} onClose={() => setImportOpen(false)} onChapters={addChapters} />
+      <ImageLightbox images={lightbox.images} index={lightbox.index} onClose={() => setLightbox({ images: [], index: null })} onNavigate={(i) => setLightbox((s) => ({ ...s, index: i }))} />
     </div>
   );
 }

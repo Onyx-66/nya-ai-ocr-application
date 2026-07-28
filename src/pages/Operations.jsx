@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { subscribe, clearFinished, removeOp } from '@/lib/operations';
-import { Activity, Loader2, CheckCircle2, XCircle, Trash2, Sparkles, Languages } from 'lucide-react';
+import { subscribe, clearFinished, removeOp, requestStopAll, isStopRequested } from '@/lib/operations';
+import { Activity, Loader2, CheckCircle2, XCircle, Trash2, Sparkles, Languages, Square, Clock, ListChecks } from 'lucide-react';
 
 const elapsed = (s, e) => {
   const ms = (e || Date.now()) - s;
@@ -13,10 +13,16 @@ const elapsed = (s, e) => {
 
 export default function Operations() {
   const [ops, setOps] = useState([]);
+  const [now, setNow] = useState(Date.now());
   useEffect(() => subscribe(setOps), []);
+  useEffect(() => { if (ops.some((o) => o.status === 'running')) { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); } }, [ops]);
 
   const active = ops.filter((o) => o.status === 'running');
   const finished = ops.filter((o) => o.status !== 'running');
+  const doneCount = ops.filter((o) => o.status === 'done').length;
+  const avgSec = finished.length ? Math.round(finished.reduce((a, o) => a + ((o.finishedAt || now) - o.startedAt), 0) / finished.length / 1000) : 0;
+
+  const stopRequestedNow = isStopRequested();
 
   return (
     <div className="p-4 sm:p-6 md:p-10 max-w-3xl mx-auto">
@@ -29,6 +35,28 @@ export default function Operations() {
         )}
       </div>
       <p className="text-[hsl(var(--c-dim))] text-sm mb-6">Active and recent OCR / translation jobs across all chapters.</p>
+
+      {/* Summary */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
+          <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]"><ListChecks className="w-4 h-4" /><span className="text-[11px] uppercase tracking-wide">Total</span></div>
+          <p className="text-2xl font-semibold text-[hsl(var(--c-text))] mt-1">{ops.length}</p>
+        </div>
+        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
+          <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]"><Loader2 className="w-4 h-4" /><span className="text-[11px] uppercase tracking-wide">Running</span></div>
+          <p className="text-2xl font-semibold text-[hsl(var(--c-accent))] mt-1">{active.length}</p>
+        </div>
+        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
+          <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]"><Clock className="w-4 h-4" /><span className="text-[11px] uppercase tracking-wide">Avg / job</span></div>
+          <p className="text-2xl font-semibold text-[hsl(var(--c-text))] mt-1">{avgSec}s</p>
+        </div>
+      </div>
+
+      {active.length > 0 && (
+        <button onClick={requestStopAll} disabled={stopRequestedNow} className={`w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold mb-5 text-white ${stopRequestedNow ? 'bg-[hsl(var(--c-soft-2))] opacity-60 cursor-not-allowed' : 'bg-rose-500 hover:bg-rose-600'}`}>
+          <Square className="w-4 h-4" /> {stopRequestedNow ? 'Stopping…' : 'Stop all operations'}
+        </button>
+      )}
 
       {ops.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[hsl(var(--c-border))] p-10 text-center text-[hsl(var(--c-dim))]">
@@ -49,7 +77,7 @@ export default function Operations() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[hsl(var(--c-text))] truncate">{o.label}</p>
-                        <p className="text-xs text-[hsl(var(--c-dim))]">Running · {elapsed(o.startedAt)}</p>
+                        <p className="text-xs text-[hsl(var(--c-dim))]">Running · {elapsed(o.startedAt, now)}</p>
                       </div>
                       <Loader2 className="w-5 h-5 animate-spin text-[hsl(var(--c-accent))] shrink-0" />
                     </div>

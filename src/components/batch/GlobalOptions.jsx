@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Languages, BookType, ChevronDown } from 'lucide-react';
+import { Languages, BookType, ChevronDown, Zap, FileText } from 'lucide-react';
 import LanguageSelect from '@/components/batch/LanguageSelect';
 import { Switch } from '@/components/ui/switch';
 import DriveFolderButton from '@/components/batch/DriveFolderButton';
+import ExportTemplateSelect from '@/components/batch/ExportTemplateSelect';
 
 const FORMATS = [{ id: 'txt', label: '.txt' }, { id: 'md', label: '.md' }];
 
-export default function GlobalOptions({ serieTitle, format, translateEnabled, targetLanguage, uploadFolder, onField }) {
+export default function GlobalOptions({ serieTitle, format, translateEnabled, targetLanguage, emptyLine, uploadFolder, onField }) {
   const [open, setOpen] = useState(true);
   return (
     <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] overflow-hidden">
@@ -18,6 +19,12 @@ export default function GlobalOptions({ serieTitle, format, translateEnabled, ta
 
       {open && (
         <div className="px-4 pb-4 space-y-4">
+          {/* Export template */}
+          <div>
+            <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Export template</label>
+            <ExportTemplateSelect onChange={(t) => onField('template', t)} />
+          </div>
+
           <div>
             <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Serie title</label>
             <input
@@ -56,8 +63,16 @@ export default function GlobalOptions({ serieTitle, format, translateEnabled, ta
             )}
           </div>
 
+          <label className="flex items-center justify-between cursor-pointer border-t border-[hsl(var(--c-border))] pt-4">
+            <span>
+              <span className="block text-sm text-[hsl(var(--c-text))]">Empty line after each bubble</span>
+              <span className="block text-xs text-[hsl(var(--c-dim))]">Adds a blank line in OCR &amp; translation files.</span>
+            </span>
+            <Switch checked={emptyLine} onCheckedChange={(v) => onField('emptyLine', v)} className="data-[state=checked]:bg-[hsl(var(--c-accent))]" />
+          </label>
+
           <div className="border-t border-[hsl(var(--c-border))] pt-4">
-            <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Default Google Drive upload folder</label>
+            <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Google Drive upload folder</label>
             <DriveFolderButton value={uploadFolder} onChange={(v) => onField('uploadFolder', v)} />
           </div>
         </div>
