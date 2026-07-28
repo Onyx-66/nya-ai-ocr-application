@@ -50,7 +50,7 @@ export default function ChapterCard({
         </span>
         {badge('OCR', chapter.ocrStatus, chapter.ocrProgress)}
         {translateEnabled && badge('TL', chapter.translateStatus, chapter.translateProgress)}
-        <button onClick={() => onRemove(chapter.id)} className="text-[hsl(var(--c-dim))] hover:text-rose-400 shrink-0 p-3 -m-3 rounded-lg" title="Remove chapter">
+        <button onClick={() => onRemove(chapter.id)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] shrink-0 p-3 -m-3 rounded-lg" title="Remove chapter">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>

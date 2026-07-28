@@ -109,14 +109,14 @@ export default function BatchWorkspace() {
             <button onClick={() => setImportOpen(true)} className="flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] text-white rounded-lg px-3 py-2.5 text-sm font-medium">
               <Sparkles className="w-4 h-4" /> Import
             </button>
-            <button onClick={addChapter} className="flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg px-3 py-2.5 text-sm font-medium">
+            <button onClick={addChapter} className="flex items-center justify-center gap-2 bg-[hsl(var(--c-danger))] hover:opacity-90 text-[hsl(var(--c-danger-fg))] rounded-lg px-3 py-2.5 text-sm font-medium">
               <Trash2 className="w-4 h-4" /> Empty chapter
             </button>
           </div>
           <button
             onClick={running ? stopOperation : startOperation}
             disabled={!running && (!hasImages || !hasCredits)}
-            className={`w-full flex items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed text-white ${running ? 'bg-rose-500 hover:bg-rose-600' : 'bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))]'}`}
+            className={`w-full flex items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed text-white ${running ? 'bg-[hsl(var(--c-danger-strong))] hover:opacity-90' : 'bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))]'}`}
           >
             {running ? <><Square className="w-4 h-4" /> Stop operation</> : <><Play className="w-4 h-4" /> Start operation</>}
           </button>

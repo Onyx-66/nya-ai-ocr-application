@@ -50,13 +50,16 @@
     --c-card: 231 29% 14%;
     --c-soft: 231 28% 17%;
     --c-soft-2: 231 28% 22%;
-    --c-border: 231 22% 22%;
-    --c-input: 229 27% 11%;
-    --c-text: 0 0% 100%;
-    --c-text-soft: 220 10% 78%;
+    --c-border: 231 19% 24%;
+    --c-input: 231 28% 17%;
+    --c-text: 240 5% 90%;
+    --c-text-soft: 228 8% 76%;
     --c-dim: 220 8% 64%;
     --c-accent: 248 53% 58%;
     --c-accent-2: 248 53% 66%;
+    --c-danger: 352 30% 14%;
+    --c-danger-fg: 350 60% 83%;
+    --c-danger-strong: 348 74% 64%;
   }
 
   html { font-size: calc(100% * var(--font-scale)); }
@@ -148,8 +151,9 @@
   /* Theme: Light */
   [data-theme="light"] {
     --c-bg: 210 40% 96%; --c-card: 0 0% 100%; --c-soft: 210 20% 92%; --c-soft-2: 210 20% 86%;
-    --c-border: 220 13% 88%; --c-input: 0 0% 100%; --c-text: 222 47% 11%; --c-text-soft: 220 14% 30%;
+    --c-border: 220 13% 88%; --c-input: 220 14% 93%; --c-text: 222 47% 11%; --c-text-soft: 220 14% 30%;
     --c-dim: 215 16% 45%; --c-accent: 243 75% 59%; --c-accent-2: 245 76% 66%;
+    --c-danger: 352 40% 90%; --c-danger-fg: 350 70% 28%; --c-danger-strong: 348 80% 50%;
   }
 }
 

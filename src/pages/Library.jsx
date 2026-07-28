@@ -127,7 +127,7 @@ export default function Library() {
                 <button onClick={() => doZip(selItems)} disabled={busy || !selItems.length} className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-40 text-[hsl(var(--c-text))] rounded-lg px-3 py-2 text-sm font-medium">
                   <Download className="w-4 h-4" /> ZIP {selItems.length || ''}
                 </button>
-                <button onClick={() => doDelete(selItems)} disabled={!selItems.length} className="flex items-center gap-2 text-rose-400 hover:bg-rose-500/10 disabled:opacity-40 rounded-lg px-3 py-2 text-sm font-medium">
+                <button onClick={() => doDelete(selItems)} disabled={!selItems.length} className="flex items-center gap-2 bg-[hsl(var(--c-danger))] hover:opacity-90 text-[hsl(var(--c-danger-fg))] disabled:opacity-40 rounded-lg px-3 py-2 text-sm font-medium">
                   <Trash2 className="w-4 h-4" /> Delete
                 </button>
               </div>
@@ -142,7 +142,7 @@ export default function Library() {
                   <Download className="w-4 h-4" />Download ZIP
                 </button>
               </div>
-              <button onClick={() => { clearLibrary(); setEntries([]); flash('Library cleared'); }} disabled={!entries.length} className="ml-auto flex items-center gap-2 text-rose-400 hover:bg-rose-500/10 disabled:opacity-40 rounded-lg px-3 py-2 text-sm font-medium">
+              <button onClick={() => { clearLibrary(); setEntries([]); flash('Library cleared'); }} disabled={!entries.length} className="ml-auto flex items-center gap-2 text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] disabled:opacity-40 rounded-lg px-3 py-2 text-sm font-medium">
                 <Trash2 className="w-4 h-4" />Clear
               </button>
             </div>
@@ -182,7 +182,7 @@ export default function Library() {
                       <button onClick={() => setPreview(e)} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-2.5 py-1.5"><Eye className="w-3.5 h-3.5" />View</button>
                       <button onClick={() => copy(e)} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-2.5 py-1.5"><Copy className="w-3.5 h-3.5" />Copy</button>
                       <button onClick={() => doSave([e])} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-2.5 py-1.5"><FolderDown className="w-3.5 h-3.5" />Save</button>
-                      <button onClick={() => doDelete([e])} className="flex items-center gap-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg px-3 py-2.5 ml-auto"><Trash2 className="w-3.5 h-3.5" />Delete</button>
+                      <button onClick={() => doDelete([e])} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] hover:bg-[hsl(var(--c-soft))] rounded-lg px-3 py-2.5 ml-auto"><Trash2 className="w-3.5 h-3.5" />Delete</button>
                     </div>
                   )}
                 </div>

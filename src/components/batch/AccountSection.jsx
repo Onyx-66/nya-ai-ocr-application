@@ -81,7 +81,7 @@ export default function AccountSection() {
           <button
             onClick={apply}
             disabled={isZero}
-            className={`flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed ${isRemove ? 'bg-rose-500 hover:bg-rose-600' : 'bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))]'}`}
+            className={`flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))]'}`}
           >
             Apply
           </button>
@@ -92,7 +92,7 @@ export default function AccountSection() {
 
       {/* Delete account */}
       <div className="pt-3 border-t border-[hsl(var(--c-border))]">
-        <button onClick={() => setDelOpen(true)} className="flex items-center gap-1.5 text-sm text-rose-500 hover:text-rose-400">
+        <button onClick={() => setDelOpen(true)} className="flex items-center gap-1.5 text-sm text-[hsl(var(--c-danger-strong))] hover:opacity-80">
           <Trash2 className="w-4 h-4" /> Delete account
         </button>
       </div>
@@ -108,7 +108,7 @@ export default function AccountSection() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="bg-[hsl(var(--c-soft))] text-[hsl(var(--c-text))] border-[hsl(var(--c-border))]">Cancel</AlertDialogCancel>
-            <button onClick={() => { setDelOpen(false); setDelOpen2(true); }} className="bg-rose-500 hover:bg-rose-600 text-white rounded-md px-4 py-2 text-sm font-medium">
+            <button onClick={() => { setDelOpen(false); setDelOpen2(true); }} className="bg-[hsl(var(--c-danger-strong))] hover:opacity-90 text-white rounded-md px-4 py-2 text-sm font-medium">
               Continue
             </button>
           </AlertDialogFooter>
@@ -127,7 +127,7 @@ export default function AccountSection() {
           {delErr && <p className="text-xs text-rose-400 -mt-1">{delErr}</p>}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting} className="bg-[hsl(var(--c-soft))] text-[hsl(var(--c-text))] border-[hsl(var(--c-border))]">Cancel</AlertDialogCancel>
-            <button onClick={doDelete} disabled={deleting} className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-md px-4 py-2 text-sm font-medium">
+            <button onClick={doDelete} disabled={deleting} className="flex items-center gap-1.5 bg-[hsl(var(--c-danger-strong))] hover:opacity-90 disabled:opacity-50 text-white rounded-md px-4 py-2 text-sm font-medium">
               {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Delete forever
             </button>
           </AlertDialogFooter>

@@ -77,7 +77,7 @@ export default function ExportTemplateManager() {
             </button>
             {activeId === t.id && <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-[hsl(var(--c-accent))]/15 text-[hsl(var(--c-accent))] shrink-0">Active</span>}
             <button onClick={() => startEdit(t)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] shrink-0"><Edit2 className="w-4 h-4" /></button>
-            <button onClick={() => remove(t.id)} className="text-[hsl(var(--c-dim))] hover:text-rose-400 shrink-0"><Trash2 className="w-4 h-4" /></button>
+            <button onClick={() => remove(t.id)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] shrink-0"><Trash2 className="w-4 h-4" /></button>
           </div>
         ))}
       </div>

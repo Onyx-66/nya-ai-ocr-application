@@ -41,7 +41,7 @@ export default function Usage() {
       <div className="flex items-center justify-between gap-3 mb-1">
         <h1 className="text-2xl font-heading font-semibold text-[hsl(var(--c-text))]">Usage dashboard</h1>
         {usage.length > 0 && (
-          <button onClick={() => { clearUsage(); setTick((t) => t + 1); }} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-dim))] hover:text-rose-400">
+          <button onClick={() => { clearUsage(); setTick((t) => t + 1); }} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))]">
             <Trash2 className="w-3.5 h-3.5" />Clear
           </button>
         )}

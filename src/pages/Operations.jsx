@@ -56,7 +56,7 @@ export default function Operations() {
       </div>
 
       {active.length > 0 && (
-        <button onClick={requestStopAll} disabled={stopRequestedNow} className={`w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold mb-5 text-white ${stopRequestedNow ? 'bg-[hsl(var(--c-soft-2))] opacity-60 cursor-not-allowed' : 'bg-rose-500 hover:bg-rose-600'}`}>
+        <button onClick={requestStopAll} disabled={stopRequestedNow} className={`w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold mb-5 text-white ${stopRequestedNow ? 'bg-[hsl(var(--c-soft-2))] opacity-60 cursor-not-allowed' : 'bg-[hsl(var(--c-danger-strong))] hover:opacity-90'}`}>
           <Square className="w-4 h-4" /> {stopRequestedNow ? 'Stopping…' : 'Stop all operations'}
         </button>
       )}
@@ -117,7 +117,7 @@ export default function Operations() {
                       <p className="text-sm font-medium text-[hsl(var(--c-text))] truncate">{o.label}</p>
                       <p className="text-xs text-[hsl(var(--c-dim))] truncate">{o.status === 'done' ? 'Completed' : 'Failed'} · {elapsed(o.startedAt, o.finishedAt)}{o.error ? ` · ${o.error}` : ''}</p>
                     </div>
-                    <button onClick={() => removeOp(o.id)} className="text-[hsl(var(--c-dim))] hover:text-rose-400 shrink-0"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => removeOp(o.id)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] shrink-0"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
               </div>

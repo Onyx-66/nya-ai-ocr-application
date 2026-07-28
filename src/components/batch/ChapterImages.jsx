@@ -61,7 +61,7 @@ export default function ChapterImages({ images, perPage, onReorder, onRemove, on
                       {!done && !run && (
                         <button
                           onClick={() => onRemove(i)}
-                          className="absolute top-1 right-1 z-10 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:text-rose-400"
+                          className="absolute top-1 right-1 z-10 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70"
                           title="Remove image"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
