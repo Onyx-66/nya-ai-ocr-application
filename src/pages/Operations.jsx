@@ -40,18 +40,18 @@ export default function Operations() {
       <p className="text-[hsl(var(--c-dim))] text-sm mb-6">Active and recent OCR / translation jobs across all chapters.</p>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
-          <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]"><ListChecks className="w-4 h-4" /><span className="text-[11px] uppercase tracking-wide">Total</span></div>
-          <p className="text-2xl font-semibold text-[hsl(var(--c-text))] mt-1">{ops.length}</p>
+      <div className="space-y-2.5 mb-6">
+        <div className="flex items-center justify-between rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] px-4 h-14">
+          <div className="flex items-center gap-2.5 text-[hsl(var(--c-dim))]"><ListChecks className="w-4 h-4" /><span className="text-xs uppercase tracking-wide font-medium">Total</span></div>
+          <p className="text-xl font-semibold text-[hsl(var(--c-text))] tabular-nums">{ops.length}</p>
         </div>
-        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
-          <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]"><Loader2 className="w-4 h-4" /><span className="text-[11px] uppercase tracking-wide">Running</span></div>
-          <p className="text-2xl font-semibold text-[hsl(var(--c-accent))] mt-1">{active.length}</p>
+        <div className="flex items-center justify-between rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] px-4 h-14">
+          <div className="flex items-center gap-2.5 text-[hsl(var(--c-dim))]"><Loader2 className="w-4 h-4" /><span className="text-xs uppercase tracking-wide font-medium">Running</span></div>
+          <p className="text-xl font-semibold text-[hsl(var(--c-accent))] tabular-nums">{active.length}</p>
         </div>
-        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
-          <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]"><Clock className="w-4 h-4" /><span className="text-[11px] uppercase tracking-wide">Avg / job</span></div>
-          <p className="text-2xl font-semibold text-[hsl(var(--c-text))] mt-1">{avgSec}s</p>
+        <div className="flex items-center justify-between rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] px-4 h-14">
+          <div className="flex items-center gap-2.5 text-[hsl(var(--c-dim))]"><Clock className="w-4 h-4" /><span className="text-xs uppercase tracking-wide font-medium">Avg / job</span></div>
+          <p className="text-xl font-semibold text-[hsl(var(--c-text))] tabular-nums">{avgSec}s</p>
         </div>
       </div>
 
