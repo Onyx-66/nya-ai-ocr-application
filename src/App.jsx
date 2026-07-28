@@ -10,6 +10,8 @@ import { ThemeProvider } from '@/lib/ThemeContext';
 // Add page imports here
 import Home from './pages/Home';
 import Settings from './pages/Settings';
+import Library from './pages/Library';
+import Operations from './pages/Operations';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -45,6 +47,8 @@ const AuthenticatedApp = () => {
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/library" element={<Library />} />
+          <Route path="/operations" element={<Operations />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>

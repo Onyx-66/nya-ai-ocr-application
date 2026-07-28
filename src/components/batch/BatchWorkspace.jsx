@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { getMarkers } from '@/lib/markers';
 import { getDefaults } from '@/lib/appDefaults';
+import { addEntry } from '@/lib/library';
+import { addOp, updateOp } from '@/lib/operations';
 import GlobalOptions from '@/components/batch/GlobalOptions';
 import ChapterCard from '@/components/batch/ChapterCard';
 import ImageLightbox from '@/components/batch/ImageLightbox';
@@ -55,47 +57,79 @@ export default function BatchWorkspace() {
   };
 
   const runOcr = async (id) => {
-    const ch = chapters.find((c) => c.id === id);
+    const idx = chapters.findIndex((c) => c.id === id);
+    const ch = chapters[idx];
     if (!ch || !ch.images.length) return;
     if (!hasCredits) { update(id, { ocrError: 'Not enough credits — add credits in Settings' }); return; }
     update(id, { ocrStatus: 'running', ocrError: '', ocrOutput: '' });
+    const opId = addOp({ label: `OCR · ${ch.title.trim() || 'Chapter ' + (idx + 1)}`, type: 'ocr' });
     try {
       const res = await base44.functions.invoke('ocrImages', {
         image_urls: ch.images.map((i) => i.url),
         format, title: ch.title.trim() || serieTitle.trim() || null,
         markers: getMarkers(), empty_line: emptyLine
       });
-      update(id, { ocrStatus: 'done', ocrOutput: (res.data && res.data.fullOutput) || '' });
+      const out = (res.data && res.data.fullOutput) || '';
+      update(id, { ocrStatus: 'done', ocrOutput: out });
+      addEntry({ id: `${id}-ocr`, serie: serieTitle.trim() || ch.title.trim() || 'Untitled', chapter: idx + 1, type: 'ocr', language: null, format, content: out, created: Date.now() });
+      updateOp(opId, { status: 'done', progress: 100, finishedAt: Date.now() });
       await spend();
     } catch (e) {
       update(id, { ocrStatus: 'error', ocrError: e.message || 'OCR failed' });
+      updateOp(opId, { status: 'error', error: e.message, finishedAt: Date.now() });
     }
   };
 
   const translate = async (id) => {
-    const ch = chapters.find((c) => c.id === id);
+    const idx = chapters.findIndex((c) => c.id === id);
+    const ch = chapters[idx];
     if (!ch || !ch.ocrOutput) return;
     if (!hasCredits) { update(id, { translateError: 'Not enough credits — add credits in Settings' }); return; }
     update(id, { translateStatus: 'running', translateError: '', translateOutput: '' });
+    const opId = addOp({ label: `Translate · ${ch.title.trim() || 'Chapter ' + (idx + 1)} · ${targetLanguage}`, type: 'translation' });
     try {
       const res = await base44.functions.invoke('translateChapter', { text: ch.ocrOutput, target_language: targetLanguage });
-      update(id, { translateStatus: 'done', translateOutput: (res.data && res.data.translated) || '' });
+      const out = (res.data && res.data.translated) || '';
+      update(id, { translateStatus: 'done', translateOutput: out });
+      addEntry({ id: `${id}-tl`, serie: serieTitle.trim() || ch.title.trim() || 'Untitled', chapter: idx + 1, type: 'translation', language: targetLanguage, format, content: out, created: Date.now() });
+      updateOp(opId, { status: 'done', progress: 100, finishedAt: Date.now() });
       await spend();
     } catch (e) {
       update(id, { translateStatus: 'error', translateError: e.message || 'Translation failed' });
+      updateOp(opId, { status: 'error', error: e.message, finishedAt: Date.now() });
     }
   };
 
   const runAllOcr = async () => {
     if (!hasCredits) return;
+    const targets = chapters.filter((c) => c.images.length);
+    if (!targets.length) return;
     setRunAllBusy(true);
-    for (const c of chapters) { if (c.images.length && (credits ?? 0) >= 1) await runOcr(c.id); }
+    const aggId = addOp({ label: `OCR · ${targets.length} chapter${targets.length > 1 ? 's' : ''}`, type: 'ocr', progress: 0, total: targets.length, completed: 0 });
+    let completed = 0, remaining = credits ?? 0;
+    for (const c of targets) {
+      if (remaining < 1) break;
+      await runOcr(c.id);
+      remaining--; completed++;
+      updateOp(aggId, { completed, progress: Math.round((completed / targets.length) * 100) });
+    }
+    updateOp(aggId, { status: 'done', progress: 100, finishedAt: Date.now() });
     setRunAllBusy(false);
   };
   const translateAll = async () => {
     if (!hasCredits) return;
+    const targets = chapters.filter((c) => c.ocrOutput);
+    if (!targets.length) return;
     setTransAllBusy(true);
-    for (const c of chapters) { if (c.ocrOutput && (credits ?? 0) >= 1) await translate(c.id); }
+    const aggId = addOp({ label: `Translate · ${targets.length} chapter${targets.length > 1 ? 's' : ''} · ${targetLanguage}`, type: 'translation', progress: 0, total: targets.length, completed: 0 });
+    let completed = 0, remaining = credits ?? 0;
+    for (const c of targets) {
+      if (remaining < 1) break;
+      await translate(c.id);
+      remaining--; completed++;
+      updateOp(aggId, { completed, progress: Math.round((completed / targets.length) * 100) });
+    }
+    updateOp(aggId, { status: 'done', progress: 100, finishedAt: Date.now() });
     setTransAllBusy(false);
   };
 

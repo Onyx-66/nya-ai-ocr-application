@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
-import { ScanText, Settings as SettingsIcon } from 'lucide-react';
+import { ScanText, Settings as SettingsIcon, Library as LibraryIcon, Activity, Zap } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
@@ -10,6 +10,8 @@ const LOGO_URL = 'https://media.base44.com/images/public/6a688b2529efa59d9f9f186
 
 const navItems = [
   { to: '/', label: 'Workspace', icon: ScanText },
+  { to: '/library', label: 'Library', icon: LibraryIcon },
+  { to: '/operations', label: 'Operations', icon: Activity },
   { to: '/settings', label: 'Settings', icon: SettingsIcon }
 ];
 
@@ -70,6 +72,16 @@ export default function Layout() {
       </aside>
 
       <main className="flex-1 overflow-auto pb-20 lg:pb-0">
+        <header className="lg:hidden sticky top-0 z-30 flex items-center gap-2 px-4 h-14 border-b border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))]/95 backdrop-blur">
+          <div className="w-7 h-7 rounded-lg overflow-hidden bg-black shrink-0">
+            <Image src={LOGO_URL} fittingType="fill" className="w-full h-full" />
+          </div>
+          <span className="font-heading font-semibold tracking-tight text-[hsl(var(--c-text))]">MangaOCR</span>
+          <span className="ml-auto flex items-center gap-1 text-xs text-[hsl(var(--c-dim))]">
+            <Zap className="w-3.5 h-3.5 text-[hsl(var(--c-accent))]" />
+            <span className="font-semibold text-[hsl(var(--c-text))]">{user?.credits ?? '…'}</span>
+          </span>
+        </header>
         <Outlet />
       </main>
 
