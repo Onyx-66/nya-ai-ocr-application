@@ -1,10 +1,16 @@
 import { useEffect } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ScanText, Settings as SettingsIcon, Library as LibraryIcon, Activity, BarChart3, Zap } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
+import Home from '@/pages/Home';
+import Library from '@/pages/Library';
+import Operations from '@/pages/Operations';
+import Usage from '@/pages/Usage';
+import Settings from '@/pages/Settings';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a688b2529efa59d9f9f1863/5009bade8_AddText_07-27-012338.png';
 
@@ -14,6 +20,16 @@ const navItems = [
   { to: '/operations', label: 'Operations', icon: Activity },
   { to: '/usage', label: 'Usage', icon: BarChart3 },
   { to: '/settings', label: 'Settings', icon: SettingsIcon }
+];
+
+// Keep-alive tabs: all pages stay mounted; inactive ones are hidden so their
+// scroll position, form state, and query criteria survive tab switches.
+const PAGES = [
+  { path: '/', Comp: Home },
+  { path: '/library', Comp: Library },
+  { path: '/operations', Comp: Operations },
+  { path: '/usage', Comp: Usage },
+  { path: '/settings', Comp: Settings }
 ];
 
 export default function Layout() {
@@ -42,7 +58,7 @@ export default function Layout() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--c-bg))] text-[hsl(var(--c-text))] flex">
+    <div className="h-screen flex bg-[hsl(var(--c-bg))] text-[hsl(var(--c-text))] overflow-hidden">
       {/* Sidebar — desktop only */}
       <aside className="hidden lg:flex w-16 xl:w-60 shrink-0 border-r border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] flex-col">
         <div className="h-16 flex items-center gap-2 px-4 border-b border-[hsl(var(--c-border))]">
@@ -72,8 +88,10 @@ export default function Layout() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto pb-20 lg:pb-0">
-        <header className="lg:hidden sticky top-0 z-30 flex items-center gap-2 px-4 h-14 border-b border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))]/95 backdrop-blur">
+      <main className="flex-1 overflow-hidden flex flex-col">
+        {/* Safe-area spacer for notches / status bars (mobile only) */}
+        <div className="lg:hidden bg-[hsl(var(--c-card))]" style={{ height: 'env(safe-area-inset-top)' }} />
+        <header className="lg:hidden flex items-center gap-2 px-4 h-14 border-b border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))]/95 backdrop-blur shrink-0">
           <div className="w-7 h-7 rounded-lg overflow-hidden bg-black shrink-0">
             <Image src={LOGO_URL} fittingType="fill" className="w-full h-full" />
           </div>
@@ -83,11 +101,30 @@ export default function Layout() {
             <span className="font-semibold text-[hsl(var(--c-text))]">{user?.credits ?? '…'}</span>
           </span>
         </header>
-        <Outlet />
+
+        {/* Keep-alive page area: each page stays mounted in its own scroll container. */}
+        <div className="flex-1 relative overflow-hidden">
+          {PAGES.map(({ path, Comp }) => {
+            const active = pathname === path;
+            return (
+              <motion.div
+                key={path}
+                animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                className="absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-contain"
+                style={{ display: active ? 'block' : 'none' }}
+              >
+                <div className="min-h-full pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-6">
+                  <Comp />
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </main>
 
       {/* Fixed footer nav — tablet & phone */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[hsl(var(--c-card))] border-t border-[hsl(var(--c-border))] flex">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[hsl(var(--c-card))] border-t border-[hsl(var(--c-border))] flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {navItems.map(({ to, label, icon: Icon }) => {
           const active = pathname === to;
           return (

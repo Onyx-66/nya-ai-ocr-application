@@ -24,26 +24,45 @@ export const FONTS = [
 
 const ThemeContext = createContext(null);
 
+// Default theme from the OS color-scheme: light → Light, dark → Midnight.
+const systemTheme = () =>
+  typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+    ? 'light'
+    : 'midnight';
+
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => localStorage.getItem('mangaocr_theme') || 'midnight');
+  const [theme, setThemeState] = useState(() => localStorage.getItem('mangaocr_theme') || systemTheme());
   const [fontFamily, setFontFamily] = useState(() => localStorage.getItem('mangaocr_font') || 'system');
   const [fontScale, setFontScale] = useState(() => Number(localStorage.getItem('mangaocr_scale') || 1));
 
-  useEffect(() => {
-    localStorage.setItem('mangaocr_theme', theme);
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-
+  // Apply theme to <html>. We persist only on explicit user choice (setTheme),
+  // so a user who never picked a theme keeps following the system preference.
+  useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
   useEffect(() => {
     localStorage.setItem('mangaocr_font', fontFamily);
     const f = FONTS.find((x) => x.id === fontFamily) || FONTS[0];
     document.documentElement.style.setProperty('--app-font', f.stack);
   }, [fontFamily]);
-
   useEffect(() => {
     localStorage.setItem('mangaocr_scale', String(fontScale));
     document.documentElement.style.setProperty('--font-scale', String(fontScale));
   }, [fontScale]);
+
+  // Live-follow system color-scheme changes until the user explicitly picks.
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
+    const handler = (e) => {
+      if (localStorage.getItem('mangaocr_theme')) return; // user chose → stop following
+      setThemeState(e.matches ? 'light' : 'midnight');
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const setTheme = (t) => {
+    localStorage.setItem('mangaocr_theme', t);
+    setThemeState(t);
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, fontFamily, setFontFamily, fontScale, setFontScale }}>

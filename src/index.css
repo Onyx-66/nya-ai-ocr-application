@@ -157,7 +157,23 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground font-body;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+  /* Prevent text selection on UI chrome; page content stays selectable. */
+  button, a, [role="button"], nav, header, aside, label, summary {
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  input, textarea, [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
   }
 }
