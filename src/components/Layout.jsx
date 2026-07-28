@@ -1,5 +1,8 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { ScanText, Settings as SettingsIcon } from 'lucide-react';
+import { Image } from '@/components/ui/image';
+
+const LOGO_URL = 'https://media.base44.com/images/public/6a688b2529efa59d9f9f1863/5009bade8_AddText_07-27-012338.png';
 
 const navItems = [
   { to: '/', label: 'Workspace', icon: ScanText },
@@ -12,8 +15,8 @@ export default function Layout() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex">
       <aside className="w-16 md:w-60 shrink-0 border-r border-slate-800 bg-slate-900/50 flex flex-col">
         <div className="h-16 flex items-center gap-2 px-4 border-b border-slate-800">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
-            <ScanText className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-black">
+            <Image src={LOGO_URL} fittingType="fill" className="w-full h-full" />
           </div>
           <span className="hidden md:block font-heading font-semibold tracking-tight">MangaOCR</span>
         </div>
