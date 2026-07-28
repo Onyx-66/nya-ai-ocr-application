@@ -17,7 +17,7 @@ export const DEFAULT_MARKERS = {
   tlnote: { prefix: 'TL/N: ', suffix: '' }
 };
 
-export function formatPages(pages, format, title, markers) {
+export function formatPages(pages, format, title, markers, emptyLine) {
   const m = markers && typeof markers === 'object' && Object.keys(markers).length ? markers : DEFAULT_MARKERS;
   const fmt = format === 'md' ? 'md' : 'txt';
   let out = '';
@@ -32,6 +32,7 @@ export function formatPages(pages, format, title, markers) {
       if (!text) return;
       const mk = m[item.type] || { prefix: '', suffix: '' };
       out += `${mk.prefix || ''}${text}${mk.suffix || ''}\n`;
+      if (emptyLine) out += '\n';
     });
     if (multi && i < pages.length - 1) out += '\n';
   });

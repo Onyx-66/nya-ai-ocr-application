@@ -12,7 +12,12 @@
     "credits": {
       "type": "number",
       "description": "Credits consumed by OCR (1) and translation (1) actions",
-      "default": 50
+      "default": 15
+    },
+    "last_daily_gift": {
+      "type": "string",
+      "description": "Local date (YYYY-MM-DD) of the last daily login gift claim",
+      "format": "date"
     }
   },
   "required": [

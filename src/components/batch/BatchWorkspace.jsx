@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { getMarkers } from '@/lib/markers';
+import { getDefaults } from '@/lib/appDefaults';
 import GlobalOptions from '@/components/batch/GlobalOptions';
 import ChapterCard from '@/components/batch/ChapterCard';
 import ImageLightbox from '@/components/batch/ImageLightbox';
@@ -17,23 +18,20 @@ const newChapter = (overrides = {}) => ({
 
 export default function BatchWorkspace() {
   const { user, checkUserAuth } = useAuth();
+  const d = getDefaults();
   const [chapters, setChapters] = useState([]);
-  const [serieTitle, setSerieTitle] = useState('');
-  const [format, setFormat] = useState('md');
-  const [translateEnabled, setTranslateEnabled] = useState(false);
-  const [targetLanguage, setTargetLanguage] = useState('English');
+  const [serieTitle, setSerieTitle] = useState(d.serie);
+  const [format, setFormat] = useState(d.format);
+  const [translateEnabled, setTranslateEnabled] = useState(d.translate);
+  const [targetLanguage, setTargetLanguage] = useState(d.language);
+  const [emptyLine, setEmptyLine] = useState(d.emptyLine);
   const [uploadFolder, setUploadFolder] = useState(() => localStorage.getItem('driveFolder') || null);
   const [lightbox, setLightbox] = useState({ images: [], index: null });
   const [runAllBusy, setRunAllBusy] = useState(false);
   const [transAllBusy, setTransAllBusy] = useState(false);
   const [credits, setCredits] = useState(null);
 
-  useEffect(() => {
-    setCredits(user?.credits ?? null);
-    if (user && user.credits == null) {
-      base44.auth.updateMe({ credits: 50 }).then(() => checkUserAuth()).catch(() => {});
-    }
-  }, [user]);
+  useEffect(() => { setCredits(user?.credits ?? null); }, [user]);
 
   const hasCredits = (credits ?? 0) >= 1;
 
@@ -65,7 +63,7 @@ export default function BatchWorkspace() {
       const res = await base44.functions.invoke('ocrImages', {
         image_urls: ch.images.map((i) => i.url),
         format, title: ch.title.trim() || serieTitle.trim() || null,
-        markers: getMarkers()
+        markers: getMarkers(), empty_line: emptyLine
       });
       update(id, { ocrStatus: 'done', ocrOutput: (res.data && res.data.fullOutput) || '' });
       await spend();

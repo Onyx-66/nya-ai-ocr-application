@@ -1,6 +1,10 @@
+import { useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { ScanText, Settings as SettingsIcon } from 'lucide-react';
 import { Image } from '@/components/ui/image';
+import { useAuth } from '@/lib/AuthContext';
+import { base44 } from '@/api/base44Client';
+import { useToast } from '@/components/ui/use-toast';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a688b2529efa59d9f9f1863/5009bade8_AddText_07-27-012338.png';
 
@@ -11,6 +15,29 @@ const navItems = [
 
 export default function Layout() {
   const { pathname } = useLocation();
+  const { user, checkUserAuth } = useAuth();
+  const { toast } = useToast();
+
+  // First-use welcome credits (15) + free daily login gift (+4).
+  useEffect(() => {
+    if (!user) return;
+    const today = new Date().toLocaleDateString('en-CA');
+    const patch = {};
+    let base = user.credits;
+    if (base == null) { base = 15; patch.credits = 15; }
+    if (user.last_daily_gift !== today) {
+      patch.credits = base + 4;
+      patch.last_daily_gift = today;
+    }
+    if (Object.keys(patch).length) {
+      const gifted = !!patch.last_daily_gift;
+      base44.auth.updateMe(patch).then(() => {
+        checkUserAuth();
+        if (gifted) toast({ title: 'Daily login gift', description: '+4 credits added to your account.' });
+      }).catch(() => {});
+    }
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-[hsl(var(--c-bg))] text-[hsl(var(--c-text))] flex">
       {/* Sidebar — desktop only */}

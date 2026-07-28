@@ -15,21 +15,23 @@ export default async function(req: Request): Promise<Response> {
       return Response.json({ error: 'A target language is required' }, { status: 400 });
     }
 
-    const prompt = `You are a professional manga / manhwa / webtoon translator.
-Translate the following OCR transcript from its original language into ${target_language}.
+    const prompt = `You are an elite manga / manhwa / webtoon translator. Translate the following OCR transcript from its original language into ${target_language} with natural, fluent, in-character dialogue.
 
-Preserve ALL structural formatting EXACTLY as-is:
-- Keep page separators on their own line ("--- Page N ---").
-- Keep "## " prefixes for narration lines.
-- Keep "SFX: " prefixes for sound-effect lines — translate the sound/meaning naturally for ${target_language}.
-- Keep one speech bubble per line, in the same order.
-- Do NOT add quotes, speaker names, notes, or any commentary.
-- Output ONLY the translated text, nothing else.
+PRESERVE THE STRUCTURE EXACTLY:
+- Keep every line in the same order, one bubble per line.
+- Keep ALL sign markers EXACTLY as they appear at the start and/or end of each line — including ""  //  []  ()  **  SFX:  ::  <>  ST:  OT:  TL/N: and any custom signs. Move them with the line; do not remove, reorder, split, or alter them.
+- Keep "--- Page N ---" separators on their own line, unchanged.
+- Keep blank lines EXACTLY where they appear in the source — do not add or remove empty lines.
+- For "SFX:" lines, adapt the sound to a natural ${target_language} equivalent while keeping the "SFX: " prefix.
+- Match the tone of each bubble type: shouts feel forceful, thoughts feel internal, narration stays descriptive, system text stays terse.
+- Translate names/terms consistently. If a term has no direct equivalent, transliterate and keep it natural.
+- Do NOT add quotation marks, speaker names, translator notes, or any commentary.
+- Output ONLY the translated transcript, nothing else.
 
 TRANSCRIPT:
 ${text}`;
 
-    const res = await base44.asServiceRole.integrations.Core.InvokeLLM({ prompt });
+    const res = await base44.asServiceRole.integrations.Core.InvokeLLM({ prompt, model: 'gpt_5_4' });
     const translated = typeof res === 'string' ? res : (res && (res.text || res.output)) || String(res || '');
     return Response.json({ translated: translated.trim() });
   } catch (error) {
