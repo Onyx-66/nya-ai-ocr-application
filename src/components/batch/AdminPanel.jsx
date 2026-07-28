@@ -33,11 +33,11 @@ export default function AdminPanel() {
 
   const addCredits = async (id) => {
     const amt = Number(amounts[id] || 0);
-    if (!amt) return;
+    if (!amt || Number.isNaN(amt)) return;
     const u = users.find((x) => x.id === id);
     const cur = u?.credits ?? 0;
     try {
-      await base44.entities.User.update(id, { credits: cur + amt });
+      await base44.entities.User.update(id, { credits: Math.max(0, cur + amt) });
       setAmounts((a) => ({ ...a, [id]: '' }));
       load();
     } catch (e) { setErr(e.message); }
@@ -75,14 +75,15 @@ export default function AdminPanel() {
               </select>
               <div className="flex items-center gap-1">
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={amounts[u.id] || ''}
                   onChange={(e) => setAmounts((a) => ({ ...a, [u.id]: e.target.value }))}
-                  placeholder="+credits"
-                  className="w-20 bg-[hsl(var(--c-card))] border border-[hsl(var(--c-border))] rounded-md px-2 py-1.5 text-xs text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))]"
+                  placeholder="+/- credits"
+                  className="w-24 bg-[hsl(var(--c-card))] border border-[hsl(var(--c-border))] rounded-md px-2 py-1.5 text-xs text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))]"
                 />
                 <button onClick={() => addCredits(u.id)} className="flex items-center gap-1 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] text-white rounded-md px-2 py-1.5 text-xs font-medium">
-                  <Plus className="w-3.5 h-3.5" /> Add
+                  <Plus className="w-3.5 h-3.5" /> Apply
                 </button>
               </div>
             </div>

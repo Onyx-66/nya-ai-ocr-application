@@ -13,13 +13,17 @@ export default function ChapterCard({
   const [activeTab, setActiveTab] = useState('ocr');
 
   const set = (patch) => onUpdate(chapter.id, patch);
-  const statusBadge = () => {
-    const s = chapter.ocrStatus;
-    if (s === 'running') return <span className="text-xs text-[hsl(var(--c-accent))] flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> OCR</span>;
-    if (s === 'done') return <span className="text-xs text-emerald-400">OCR ✓</span>;
-    if (s === 'error') return <span className="text-xs text-rose-400">OCR ✗</span>;
+  const resetOcr = { ocrStatus: 'idle', ocrProgress: 0, perPage: null, ocrOutput: '', ocrError: '' };
+
+  const badge = (label, status, progress) => {
+    if (status === 'running') return <span className="text-xs text-[hsl(var(--c-accent))] flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> {label} {progress ?? 0}%</span>;
+    if (status === 'done') return <span className="text-xs text-emerald-400 flex items-center gap-1">{label} ✓</span>;
+    if (status === 'error') return <span className="text-xs text-rose-400">{label} ✗</span>;
     return null;
   };
+
+  const ocrRunning = chapter.ocrStatus === 'running';
+  const tlRunning = chapter.translateStatus === 'running';
 
   return (
     <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] overflow-hidden">
@@ -29,18 +33,25 @@ export default function ChapterCard({
         </button>
         <input
           value={chapter.title}
-          onChange={(e) => set({ title: e.target.value, ocrStatus: 'idle', ocrOutput: '' })}
+          onChange={(e) => set({ title: e.target.value, ...resetOcr })}
           placeholder={`Chapter ${index + 1} title`}
           className="flex-1 min-w-0 bg-transparent border-b border-transparent hover:border-[hsl(var(--c-border))] focus:border-[hsl(var(--c-accent))] focus:outline-none px-1 py-1 text-sm text-[hsl(var(--c-text))] placeholder:text-[hsl(var(--c-dim))]"
         />
         <span className="hidden sm:flex items-center gap-1 text-xs text-[hsl(var(--c-dim))] shrink-0">
           <Images className="w-3.5 h-3.5" /> {chapter.images.length}
         </span>
-        {statusBadge()}
+        {badge('OCR', chapter.ocrStatus, chapter.ocrProgress)}
+        {translateEnabled && badge('TL', chapter.translateStatus, chapter.translateProgress)}
         <button onClick={() => onRemove(chapter.id)} className="text-[hsl(var(--c-dim))] hover:text-rose-400 shrink-0" title="Remove chapter">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
+
+      {(ocrRunning || tlRunning) && (
+        <div className="h-1 bg-[hsl(var(--c-soft))]">
+          <div className="h-full bg-[hsl(var(--c-accent))] transition-all" style={{ width: `${ocrRunning ? (chapter.ocrProgress ?? 0) : (chapter.translateProgress ?? 0)}%` }} />
+        </div>
+      )}
 
       {expanded && (
         <div className="px-3 sm:px-4 pb-4 space-y-4 border-t border-[hsl(var(--c-border))] pt-4">
@@ -51,14 +62,15 @@ export default function ChapterCard({
             <Plus className="w-3.5 h-3.5" /> {showUploader ? 'Hide add images' : 'Add images (files / ZIP / Drive)'}
           </button>
           {showUploader && (
-            <ImageUploader onImages={(imgs) => { onUpdate(chapter.id, { images: [...chapter.images, ...imgs], ocrStatus: 'idle', ocrOutput: '' }); setShowUploader(false); }} />
+            <ImageUploader onImages={(imgs) => { onUpdate(chapter.id, { images: [...chapter.images, ...imgs], ...resetOcr }); setShowUploader(false); }} />
           )}
 
           {chapter.images.length > 0 && (
             <ChapterImages
               images={chapter.images}
-              onReorder={(next) => onUpdate(chapter.id, { images: next, ocrStatus: 'idle', ocrOutput: '' })}
-              onRemove={(i) => onUpdate(chapter.id, { images: chapter.images.filter((_, idx) => idx !== i), ocrStatus: 'idle', ocrOutput: '' })}
+              perPage={chapter.perPage}
+              onReorder={(next) => onUpdate(chapter.id, { images: next, ...resetOcr })}
+              onRemove={(i) => onUpdate(chapter.id, { images: chapter.images.filter((_, idx) => idx !== i), ...resetOcr })}
               onPreview={(i) => onPreview(chapter.images, i)}
             />
           )}
