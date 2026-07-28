@@ -11,6 +11,7 @@ import GlobalOptions from '@/components/batch/GlobalOptions';
 import ChapterCard from '@/components/batch/ChapterCard';
 import ImageLightbox from '@/components/batch/ImageLightbox';
 import ImportModal from '@/components/batch/ImportModal';
+import ScanAdvisor from '@/components/ScanAdvisor';
 import { Trash2, Sparkles, Zap, Play, Square, ChevronsDown, ChevronsUp } from 'lucide-react';
 
 const newChapter = (overrides = {}) => ({
@@ -27,6 +28,7 @@ export default function BatchWorkspace() {
 
   const [lightbox, setLightbox] = useState({ images: [], index: null });
   const [importOpen, setImportOpen] = useState(false);
+  const [advisorOpen, setAdvisorOpen] = useState(false);
   const [credits, setCredits] = useState(user?.credits ?? 0);
   const creditsRef = useRef(user?.credits ?? 0);
   useEffect(() => { creditsRef.current = user?.credits ?? 0; setCredits(user?.credits ?? 0); }, [user]);
@@ -95,10 +97,15 @@ export default function BatchWorkspace() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between gap-3 mb-1">
           <h1 className="text-2xl font-heading font-semibold text-[hsl(var(--c-text))]">Batch OCR Workspace</h1>
-          <span className="flex items-center gap-1.5 text-sm text-[hsl(var(--c-dim))] shrink-0">
-            <Zap className="w-4 h-4 text-[hsl(var(--c-accent))]" />
-            <span className="font-semibold text-[hsl(var(--c-text))]">{credits}</span> credits
-          </span>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button onClick={() => setAdvisorOpen(true)} className="flex items-center gap-1.5 text-xs bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] text-[hsl(var(--c-text))] rounded-lg px-3 py-1.5 font-medium">
+              <Sparkles className="w-4 h-4 text-[hsl(var(--c-accent))]" /> <span className="hidden sm:inline">Scan advisor</span><span className="sm:hidden">Advisor</span>
+            </button>
+            <span className="flex items-center gap-1.5 text-sm text-[hsl(var(--c-dim))]">
+              <Zap className="w-4 h-4 text-[hsl(var(--c-accent))]" />
+              <span className="font-semibold text-[hsl(var(--c-text))]">{credits}</span> credits
+            </span>
+          </div>
         </div>
         <p className="text-[hsl(var(--c-dim))] text-sm mb-6">Set your options, import chapters, then start the operation. Running jobs keep going if you switch pages.</p>
 
@@ -155,6 +162,7 @@ export default function BatchWorkspace() {
       </div>
 
       <ImportModal open={importOpen} onClose={() => setImportOpen(false)} onChapters={addChapters} />
+      <ScanAdvisor open={advisorOpen} onClose={() => setAdvisorOpen(false)} />
       <ImageLightbox images={lightbox.images} index={lightbox.index} onClose={() => setLightbox({ images: [], index: null })} onNavigate={(i) => setLightbox((s) => ({ ...s, index: i }))} />
     </div>
   );
