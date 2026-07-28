@@ -1,31 +1,39 @@
 /**
  * Shared output formatting for the MangaOCR Agent.
- * Rules:
- *  - One speech bubble = one line.
- *  - Narration / caption text OUTSIDE a bubble is prefixed with "## ".
- *  - Sound effects are prefixed with "SFX: ".
- *  - Multi-page jobs are separated by "--- Page N ---".
+ * Each text item is classified by `type` and wrapped/prefixed with a marker.
+ * Markers are user-customizable; defaults are provided below.
  */
-export function formatPages(pages, format, title) {
-  const fmt = format === "md" ? "md" : "txt";
-  let out = "";
+export const DEFAULT_MARKERS = {
+  speech: { prefix: '"', suffix: '"' },
+  continue: { prefix: '//', suffix: '' },
+  box: { prefix: '[', suffix: ']' },
+  thought: { prefix: '(', suffix: ')' },
+  screen: { prefix: '**', suffix: '**' },
+  sfx: { prefix: 'SFX: ', suffix: '' },
+  shout: { prefix: '::', suffix: '' },
+  system: { prefix: '<>', suffix: '' },
+  smalltext: { prefix: 'ST: ', suffix: '' },
+  outertext: { prefix: 'OT: ', suffix: '' },
+  tlnote: { prefix: 'TL/N: ', suffix: '' }
+};
+
+export function formatPages(pages, format, title, markers) {
+  const m = markers && typeof markers === 'object' && Object.keys(markers).length ? markers : DEFAULT_MARKERS;
+  const fmt = format === 'md' ? 'md' : 'txt';
+  let out = '';
   if (title && title.trim()) {
-    out += fmt === "md" ? `# ${title.trim()}\n\n` : `${title.trim()}\n\n`;
+    out += fmt === 'md' ? `# ${title.trim()}\n\n` : `${title.trim()}\n\n`;
   }
   const multi = pages.length > 1;
   pages.forEach((page, i) => {
-    if (multi) {
-      out += `--- Page ${i + 1} ---\n`;
-    }
+    if (multi) out += `--- Page ${i + 1} ---\n`;
     (page.items || []).forEach((item) => {
-      const text = (item.text || "").trim();
+      const text = (item.text || '').trim();
       if (!text) return;
-      let line = text;
-      if (item.type === "narration") line = "## " + line;
-      else if (item.type === "sfx") line = "SFX: " + line;
-      out += line + "\n";
+      const mk = m[item.type] || { prefix: '', suffix: '' };
+      out += `${mk.prefix || ''}${text}${mk.suffix || ''}\n`;
     });
-    if (multi && i < pages.length - 1) out += "\n";
+    if (multi && i < pages.length - 1) out += '\n';
   });
   return out.trim();
 }

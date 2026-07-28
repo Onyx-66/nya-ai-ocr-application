@@ -5,8 +5,14 @@
       "description": "The role of the user in the app",
       "enum": [
         "admin",
+        "premium",
         "user"
       ]
+    },
+    "credits": {
+      "type": "number",
+      "description": "Credits consumed by OCR (1) and translation (1) actions",
+      "default": 50
     }
   },
   "required": [

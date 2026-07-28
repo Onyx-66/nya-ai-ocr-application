@@ -6,7 +6,7 @@ import { ChevronDown, Sparkles, Languages, Plus, Trash2, Loader2, Images } from 
 
 export default function ChapterCard({
   chapter, index, serieTitle, format, translateEnabled, targetLanguage, uploadFolder,
-  onUpdate, onRemove, onRunOcr, onTranslate, onPreview
+  canRun, onUpdate, onRemove, onRunOcr, onTranslate, onPreview
 }) {
   const [expanded, setExpanded] = useState(true);
   const [showUploader, setShowUploader] = useState(chapter.images.length === 0);
@@ -69,7 +69,7 @@ export default function ChapterCard({
           <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={() => onRunOcr(chapter.id)}
-              disabled={chapter.ocrStatus === 'running' || !chapter.images.length}
+              disabled={chapter.ocrStatus === 'running' || !chapter.images.length || !canRun}
               className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg py-2 text-sm font-medium"
             >
               {chapter.ocrStatus === 'running' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -78,7 +78,7 @@ export default function ChapterCard({
             {translateEnabled && (
               <button
                 onClick={() => onTranslate(chapter.id)}
-                disabled={chapter.translateStatus === 'running' || !chapter.ocrOutput}
+                disabled={chapter.translateStatus === 'running' || !chapter.ocrOutput || !canRun}
                 className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-40 disabled:cursor-not-allowed text-[hsl(var(--c-text))] rounded-lg py-2 text-sm font-medium"
               >
                 {chapter.translateStatus === 'running' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Languages className="w-4 h-4" />}

@@ -1,16 +1,28 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, CheckCircle2, XCircle, Cloud, Folder, Palette, Type } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import { Loader2, CheckCircle2, XCircle, Cloud, Folder, Palette, Type, ListChecks, UserCircle } from 'lucide-react';
 import DriveFolderPicker from '@/components/DriveFolderPicker';
 import { useTheme, THEMES, FONTS } from '@/lib/ThemeContext';
+import MarkerSettings from '@/components/batch/MarkerSettings';
+import AdminPanel from '@/components/batch/AdminPanel';
+
+const ROLE_LABEL = { admin: 'Administrator', premium: 'Premium user', user: 'User' };
 
 export default function Settings() {
+  const { user, checkUserAuth } = useAuth();
   const [status, setStatus] = useState('checking');
   const [email, setEmail] = useState(null);
   const [folderId, setFolderId] = useState(() => localStorage.getItem('driveFolder') || null);
   const [saved, setSaved] = useState(false);
 
   const { theme, setTheme, fontFamily, setFontFamily, fontScale, setFontScale } = useTheme();
+
+  useEffect(() => {
+    if (user && user.credits == null) {
+      base44.auth.updateMe({ credits: 50 }).then(() => checkUserAuth()).catch(() => {});
+    }
+  }, [user]);
 
   const check = async () => {
     setStatus('checking');
@@ -32,7 +44,29 @@ export default function Settings() {
   return (
     <div className="p-4 sm:p-6 md:p-10 max-w-3xl mx-auto">
       <h1 className="text-2xl font-heading font-semibold mb-1 text-[hsl(var(--c-text))]">Settings</h1>
-      <p className="text-[hsl(var(--c-dim))] text-sm mb-8">Manage appearance, Google Drive, and default upload folder.</p>
+      <p className="text-[hsl(var(--c-dim))] text-sm mb-8">Appearance, OCR signs, account, Google Drive.</p>
+
+      {/* Account */}
+      <section className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-6 mb-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-lg bg-[hsl(var(--c-soft))] flex items-center justify-center">
+            <UserCircle className="w-5 h-5 text-[hsl(var(--c-accent))]" />
+          </div>
+          <div>
+            <h2 className="font-medium text-[hsl(var(--c-text))]">Account</h2>
+            <p className="text-xs text-[hsl(var(--c-dim))]">Your role and remaining credits.</p>
+          </div>
+          <div className="ml-auto text-right">
+            <p className="text-sm text-[hsl(var(--c-text))]">{user?.email || '—'}</p>
+            <p className="text-xs text-[hsl(var(--c-dim))]">{ROLE_LABEL[user?.role] || user?.role || '—'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg border border-[hsl(var(--c-border))] bg-[hsl(var(--c-input))] px-4 py-3">
+          <span className="text-2xl">⚡</span>
+          <span className="text-2xl font-semibold text-[hsl(var(--c-text))]">{user?.credits ?? '…'}</span>
+          <span className="text-sm text-[hsl(var(--c-dim))]">credits · 1 per OCR, 1 per translation</span>
+        </div>
+      </section>
 
       {/* Appearance */}
       <section className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-6 mb-6">
@@ -45,7 +79,6 @@ export default function Settings() {
             <p className="text-xs text-[hsl(var(--c-dim))]">Theme, fonts, and text size.</p>
           </div>
         </div>
-
         <label className="block text-xs text-[hsl(var(--c-dim))] mb-2">Theme</label>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-5">
           {THEMES.map((t) => (
@@ -61,7 +94,6 @@ export default function Settings() {
             </button>
           ))}
         </div>
-
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-dim))] mb-1.5"><Type className="w-3.5 h-3.5" /> Font family</label>
@@ -74,9 +106,7 @@ export default function Settings() {
             </select>
           </div>
           <div>
-            <label className="text-xs text-[hsl(var(--c-dim))] mb-1.5 block">
-              Font size · {Math.round(fontScale * 100)}%
-            </label>
+            <label className="text-xs text-[hsl(var(--c-dim))] mb-1.5 block">Font size · {Math.round(fontScale * 100)}%</label>
             <input
               type="range" min={0.85} max={1.3} step={0.05} value={fontScale}
               onChange={(e) => setFontScale(Number(e.target.value))}
@@ -84,6 +114,20 @@ export default function Settings() {
             />
           </div>
         </div>
+      </section>
+
+      {/* OCR Markers */}
+      <section className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-6 mb-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-lg bg-[hsl(var(--c-soft))] flex items-center justify-center">
+            <ListChecks className="w-5 h-5 text-[hsl(var(--c-accent))]" />
+          </div>
+          <div>
+            <h2 className="font-medium text-[hsl(var(--c-text))]">OCR signs</h2>
+            <p className="text-xs text-[hsl(var(--c-dim))]">Customize the markers applied to each text type.</p>
+          </div>
+        </div>
+        <MarkerSettings />
       </section>
 
       {/* Google Drive */}
@@ -98,29 +142,23 @@ export default function Settings() {
           </div>
           <div className="ml-auto">
             {status === 'checking' && <Loader2 className="w-5 h-5 animate-spin text-[hsl(var(--c-dim))]" />}
-            {status === 'connected' && (
-              <span className="flex items-center gap-1.5 text-emerald-400 text-sm font-medium"><CheckCircle2 className="w-5 h-5" /> Connected</span>
-            )}
-            {status === 'disconnected' && (
-              <span className="flex items-center gap-1.5 text-rose-400 text-sm font-medium"><XCircle className="w-5 h-5" /> Not connected</span>
-            )}
+            {status === 'connected' && <span className="flex items-center gap-1.5 text-emerald-400 text-sm font-medium"><CheckCircle2 className="w-5 h-5" /> Connected</span>}
+            {status === 'disconnected' && <span className="flex items-center gap-1.5 text-rose-400 text-sm font-medium"><XCircle className="w-5 h-5" /> Not connected</span>}
           </div>
         </div>
         {status === 'connected' && email && (
-          <p className="text-sm text-[hsl(var(--c-dim))]">Connected account: <span className="text-[hsl(var(--c-text))]">{email}</span></p>
+          <p className="text-sm text-[hsl(var(--c-dim))] mb-3">Connected account: <span className="text-[hsl(var(--c-text))]">{email}</span></p>
         )}
         {status === 'disconnected' && (
           <div className="text-sm text-[hsl(var(--c-dim))] space-y-2">
             <p>Google Drive isn't connected yet. Connect your account to enable Drive features.</p>
-            <button onClick={check} className="px-4 py-2 rounded-lg bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] text-white text-sm font-medium">
-              Recheck connection
-            </button>
+            <button onClick={check} className="px-4 py-2 rounded-lg bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] text-white text-sm font-medium">Recheck connection</button>
           </div>
         )}
       </section>
 
       {status === 'connected' && (
-        <section className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-6">
+        <section className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-[hsl(var(--c-soft))] flex items-center justify-center">
               <Folder className="w-5 h-5 text-[hsl(var(--c-accent))]" />
@@ -134,6 +172,8 @@ export default function Settings() {
           {saved && <p className="text-xs text-emerald-400 mt-2">Saved as default.</p>}
         </section>
       )}
+
+      {user?.role === 'admin' && <AdminPanel />}
     </div>
   );
 }
