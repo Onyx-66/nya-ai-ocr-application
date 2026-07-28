@@ -24,8 +24,14 @@ export const FONTS = [
 
 const ThemeContext = createContext(null);
 
-// Default to the dark navy/violet "Midnight" theme for aesthetic consistency.
-const systemTheme = () => 'midnight';
+// Detect the system color scheme when no manual choice is saved:
+// dark → Midnight (dark navy/violet), light → Light. A manual choice always wins.
+const systemTheme = () => {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'midnight' : 'light';
+  }
+  return 'midnight';
+};
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(() => localStorage.getItem('mangaocr_theme') || systemTheme());

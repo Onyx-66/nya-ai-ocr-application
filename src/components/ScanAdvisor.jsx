@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ReactMarkdown from 'react-markdown';
 import { X, Send, ImagePlus, Loader2, Sparkles } from 'lucide-react';
+import { useOverlayBack } from '@/lib/overlayHistory';
 
 const AGENT_NAME = 'scan_quality_advisor';
 
@@ -34,6 +35,7 @@ export default function ScanAdvisor({ open, onClose }) {
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef(null);
   const fileRef = useRef(null);
+  const { close } = useOverlayBack('advisor', open, onClose);
 
   // Load or create a conversation for this agent.
   useEffect(() => {
@@ -103,7 +105,7 @@ export default function ScanAdvisor({ open, onClose }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-3" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-3" onClick={close}>
       <div className="w-full sm:max-w-lg h-[90vh] sm:h-[80vh] flex flex-col rounded-t-2xl sm:rounded-2xl bg-[hsl(var(--c-card))] border border-[hsl(var(--c-border))] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-2 px-4 py-3 border-b border-[hsl(var(--c-border))] shrink-0">
           <div className="w-8 h-8 rounded-lg bg-[hsl(var(--c-accent))]/15 flex items-center justify-center shrink-0">
@@ -113,7 +115,7 @@ export default function ScanAdvisor({ open, onClose }) {
             <p className="text-sm font-medium text-[hsl(var(--c-text))]">Scan Quality Advisor</p>
             <p className="text-[11px] text-[hsl(var(--c-dim))]">Tips to improve your images for OCR</p>
           </div>
-          <button onClick={onClose} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] p-2 -m-2 rounded-lg"><X className="w-5 h-5" /></button>
+          <button onClick={close} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] p-2 -m-2 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">

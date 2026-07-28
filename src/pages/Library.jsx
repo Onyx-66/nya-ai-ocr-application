@@ -9,6 +9,7 @@ import {
   FileText, Languages, HardDrive, Unplug, Loader2, X, Search, CheckSquare, Square, Cloud, CloudOff
 } from 'lucide-react';
 import OutputPreview from '@/components/OutputPreview';
+import { useOverlayBack } from '@/lib/overlayHistory';
 import PullToRefresh from '@/components/PullToRefresh';
 
 async function hasPerm(h) { try { return (await h.queryPermission({ mode: 'readwrite' })) === 'granted'; } catch { return false; } }
@@ -23,6 +24,7 @@ export default function Library() {
   const [msg, setMsg] = useState(null);
   const [preview, setPreview] = useState(null);
   const [query, setQuery] = useState('');
+  const { close: closePreview } = useOverlayBack('library-preview', !!preview, () => setPreview(null));
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
 
@@ -195,11 +197,11 @@ export default function Library() {
         </div>
       </PullToRefresh>
       {preview && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-3" onClick={() => setPreview(null)}>
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-3" onClick={closePreview}>
           <div className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-xl bg-[hsl(var(--c-card))] border border-[hsl(var(--c-border))] overflow-hidden" onClick={(ev) => ev.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(var(--c-border))]">
               <p className="text-sm font-medium text-[hsl(var(--c-text))] truncate">{preview.serie} · Chapter {preview.chapter}</p>
-              <button onClick={() => setPreview(null)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] p-2 -m-2 rounded-lg"><X className="w-5 h-5" /></button>
+              <button onClick={closePreview} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] p-2 -m-2 rounded-lg"><X className="w-5 h-5" /></button>
             </div>
             <div className="overflow-auto p-3"><OutputPreview output={preview.content} format={preview.format} /></div>
           </div>
