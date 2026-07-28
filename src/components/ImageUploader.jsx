@@ -5,12 +5,14 @@ import { Upload, FileArchive, FolderOpen, Loader2, Link2 } from 'lucide-react';
 
 const IMAGE_RE = /\.(png|jpe?g|webp|gif|bmp)$/i;
 
-function extractFolderId(link) {
+function extractDriveId(link) {
   if (!link) return '';
-  const m1 = link.match(/\/folders\/([a-zA-Z0-9_-]+)/);
-  if (m1) return m1[1];
-  const m2 = link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (m2) return m2[1];
+  const mFolder = link.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (mFolder) return mFolder[1];
+  const mFile = link.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (mFile) return mFile[1];
+  const mId = link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (mId) return mId[1];
   return link.trim();
 }
 
@@ -71,16 +73,16 @@ export default function ImageUploader({ onImages }) {
   };
 
   const handleDrive = async () => {
-    const id = extractFolderId(driveLink);
-    if (!id) { setError('Enter a valid Google Drive folder link or ID'); return; }
+    const id = extractDriveId(driveLink);
+    if (!id) { setError('Enter a valid Google Drive folder/file link or ID'); return; }
     setLoading(true); setError(null);
     try {
       const res = await base44.functions.invoke('driveListImages', { folderId: id });
       const imgs = (res.data && res.data.images) || [];
       if (imgs.length) onImages(imgs);
-      else setError('No images found in that Drive folder');
+      else setError('No images found (folders, ZIP archives, and single images are supported)');
     } catch (e) {
-      setError(e.message || 'Could not load Drive folder (is Google Drive connected in Settings?)');
+      setError(e.message || 'Could not load from Drive (is Google Drive connected in Settings?)');
     }
     setLoading(false);
   };
@@ -138,7 +140,7 @@ export default function ImageUploader({ onImages }) {
             <input
               value={driveLink}
               onChange={(e) => setDriveLink(e.target.value)}
-              placeholder="Paste a Google Drive folder link or ID"
+              placeholder="Paste a Google Drive folder, file, or ZIP link"
               className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
             />
           </div>
@@ -147,7 +149,7 @@ export default function ImageUploader({ onImages }) {
             disabled={loading}
             className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg py-2 text-sm font-medium"
           >
-            <FolderOpen className="w-4 h-4" /> Load images from folder
+            <FolderOpen className="w-4 h-4" /> Load images from Drive
           </button>
         </div>
       )}
