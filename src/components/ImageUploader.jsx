@@ -38,8 +38,7 @@ export default function ImageUploader({ onImages }) {
       if (!files.length) { setError('No image files selected'); setLoading(false); return; }
       const imgs = [];
       for (const f of files) {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: f });
-        imgs.push({ url: file_url, name: f.name });
+        imgs.push({ url: URL.createObjectURL(f), name: f.name, local: true, file: f });
       }
       onImages(imgs);
     } catch (e) { setError(e.message || 'Upload failed'); }
@@ -56,8 +55,7 @@ export default function ImageUploader({ onImages }) {
       for (const entry of entries) {
         const blob = await entry.async('blob');
         const f = new File([blob], entry.name.split('/').pop(), { type: blob.type || 'image/png' });
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: f });
-        imgs.push({ url: file_url, name: entry.name.split('/').pop() });
+        imgs.push({ url: URL.createObjectURL(f), name: entry.name.split('/').pop(), local: true, file: f });
       }
       onImages(imgs);
     } catch (e) { setError(e.message || 'ZIP extraction failed'); }
@@ -145,7 +143,7 @@ export default function ImageUploader({ onImages }) {
 
       {loading && (
         <div className="flex items-center gap-2 text-sm text-[hsl(var(--c-dim))]">
-          <Loader2 className="w-4 h-4 animate-spin" /> Uploading & preparing images…
+          <Loader2 className="w-4 h-4 animate-spin" /> Preparing images…
         </div>
       )}
       {error && <p className="text-sm text-rose-400">{error}</p>}

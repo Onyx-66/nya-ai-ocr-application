@@ -23,9 +23,9 @@ export default function ImportModal({ open, onClose, onChapters }) {
   const browseRef = useRef(null);
   const { close } = useOverlayBack('import', open, onClose);
 
-  const uploadBlob = async (blob, name) => {
-    const { file_url } = await base44.integrations.Core.UploadFile({ file: new File([blob], name, { type: blob.type || 'image/jpeg' }) });
-    return { url: file_url, name };
+  const localImg = (blob, name) => {
+    const file = blob instanceof File ? blob : new File([blob], name, { type: blob.type || 'image/jpeg' });
+    return { url: URL.createObjectURL(file), name, local: true, file };
   };
 
   const importZip = async (file) => {
@@ -49,7 +49,7 @@ export default function ImportModal({ open, onClose, onChapters }) {
       for (const [dir, entries] of Object.entries(byTop)) {
         const sorted = entries.filter((e) => IMAGE_RE.test(e.name)).sort(sortByName);
         const imgs = [];
-        for (const e of sorted) { try { imgs.push(await uploadBlob(await e.async('blob'), e.name.split('/').pop())); } catch {} }
+        for (const e of sorted) { try { imgs.push(localImg(await e.async('blob'), e.name.split('/').pop())); } catch {} }
         if (imgs.length) chapters.push({ title: dir === '__root__' ? file.name.replace(/\.zip$/i, '') : dir, images: imgs });
       }
       for (const z of topZips) {
@@ -57,7 +57,7 @@ export default function ImportModal({ open, onClose, onChapters }) {
           const inner = await JSZip.loadAsync(await z.async('blob'));
           const inImgs = Object.values(inner.files).filter((e) => !e.dir && IMAGE_RE.test(e.name)).sort(sortByName);
           const imgs = [];
-          for (const e of inImgs) { try { imgs.push(await uploadBlob(await e.async('blob'), e.name.split('/').pop())); } catch {} }
+          for (const e of inImgs) { try { imgs.push(localImg(await e.async('blob'), e.name.split('/').pop())); } catch {} }
           if (imgs.length) chapters.push({ title: z.name.replace(/\.zip$/i, ''), images: imgs });
         } catch {}
       }
@@ -83,7 +83,7 @@ export default function ImportModal({ open, onClose, onChapters }) {
         const g = groups[key];
         const sorted = [...g.files].sort(sortByName);
         const imgs = [];
-        for (const f of sorted) { try { imgs.push(await uploadBlob(f, f.name)); } catch {} }
+        for (const f of sorted) { try { imgs.push(localImg(f, f.name)); } catch {} }
         if (imgs.length) chapters.push({ title: g.name, images: imgs });
       }
       if (chapters.length) { onChapters(chapters); finish(); }
@@ -132,7 +132,7 @@ export default function ImportModal({ open, onClose, onChapters }) {
     else if (imgs.length) {
       setLoading(true);
       const out = [];
-      for (const f of imgs.sort(sortByName)) { try { out.push(await uploadBlob(f, f.name)); } catch {} }
+      for (const f of imgs.sort(sortByName)) { try { out.push(localImg(f, f.name)); } catch {} }
       if (out.length) { onChapters([{ title: 'Dropped images', images: out }]); finish(); }
       setLoading(false);
     }

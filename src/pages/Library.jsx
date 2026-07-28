@@ -48,7 +48,7 @@ export default function Library() {
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(null), 2200); };
   const refresh = async () => { setEntries(getLibrary()); const h = await getRootHandle(); setConnected(!!h && await hasPerm(h)); };
 
-  const connect = async () => { try { await pickRoot(); setConnected(true); flash('Device folder connected'); } catch (e) { flash(e.message || 'Failed'); } };
+  const connect = async () => { try { await pickRoot(); setConnected(true); flash('Device folder connected'); } catch (e) { if (e?.name === 'AbortError') return; flash(e.message || 'Failed'); } };
   const disconnect = async () => { await clearRootHandle(); setConnected(false); flash('Folder disconnected'); };
 
   const doSave = async (list) => { if (!list.length) return flash('Nothing to save'); setBusy(true); try { const r = await saveToLibrary(list); flash(`Saved ${r.saved} file(s) → nya ai ocr/library`); setEntries(getLibrary()); } catch (e) { flash(e.message || 'Failed'); } setBusy(false); };
@@ -93,9 +93,9 @@ export default function Library() {
       </section>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-[hsl(var(--c-input))] rounded-lg border border-[hsl(var(--c-border))] w-fit mb-4">
+      <div className="flex gap-1 p-1 bg-[hsl(var(--c-input))] rounded-lg border border-[hsl(var(--c-border))] w-full mb-4">
         {TABS.map((t) => (
-          <button key={t.id} onClick={() => { setTab(t.id); setSelectMode(false); setSelected(new Set()); }} className={`px-4 py-1.5 rounded-md text-sm transition-colors ${tab === t.id ? 'bg-[hsl(var(--c-accent))] text-white' : 'text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))]'}`}>{t.label}</button>
+          <button key={t.id} onClick={() => { setTab(t.id); setSelectMode(false); setSelected(new Set()); }} className={`flex-1 px-4 py-1.5 rounded-md text-sm transition-colors ${tab === t.id ? 'bg-[hsl(var(--c-accent))] text-white' : 'text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))]'}`}>{t.label}</button>
         ))}
       </div>
 

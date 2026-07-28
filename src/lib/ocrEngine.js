@@ -47,8 +47,17 @@ export async function runChapterOcr(chapter, ctx) {
       perPage[idx] = { status: 'running' };
       store.updateChapter(id, { perPage: [...perPage] });
       try {
+        const img = images[idx];
+        let ocrUrl = img.uploadedUrl || null;
+        if (!ocrUrl && img.local && img.file instanceof File) {
+          const up = await base44.integrations.Core.UploadFile({ file: img.file });
+          ocrUrl = up.file_url;
+          const ch = store.getState().chapters.find((c) => c.id === id);
+          if (ch) store.updateChapter(id, { images: ch.images.map((im, j) => j === idx ? { ...im, uploadedUrl: ocrUrl } : im) });
+        }
+        if (!ocrUrl) ocrUrl = img.url;
         const res = await base44.functions.invoke('ocrImages', {
-          image_urls: [images[idx].url], format: ctx.format, title: null,
+          image_urls: [ocrUrl], format: ctx.format, title: null,
           markers: ctx.markers, empty_line: ctx.emptyLine
         });
         pageItems[idx] = (res.data && res.data.pages && res.data.pages[0]) || { items: [] };

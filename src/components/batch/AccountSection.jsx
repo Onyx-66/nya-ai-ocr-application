@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Zap, Minus, Trash2, Loader2 } from 'lucide-react';
+import { Zap, Trash2, Loader2 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel
@@ -10,28 +10,13 @@ import {
 const ROLE_LABEL = { admin: 'Administrator', premium: 'Premium user', user: 'User' };
 
 export default function AccountSection() {
-  const { user, checkUserAuth, logout } = useAuth();
-  const [amount, setAmount] = useState('');
-  const [msg, setMsg] = useState(null);
+  const { user, logout } = useAuth();
   const [delOpen, setDelOpen] = useState(false);
   const [delOpen2, setDelOpen2] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [delErr, setDelErr] = useState(null);
 
   const initials = (user?.email || '?').slice(0, 1).toUpperCase();
-  const amt = Number(amount) || 0;
-  const isRemove = amt < 0;
-  const isZero = amt === 0;
-
-  const apply = async () => {
-    if (isZero) return;
-    try {
-      await base44.functions.invoke('manageCredits', { action: 'adjust', amount: amt });
-      setAmount(''); setMsg(`${amt > 0 ? 'Added' : 'Removed'} ${Math.abs(amt)} credit${Math.abs(amt) > 1 ? 's' : ''}`);
-      setTimeout(() => setMsg(null), 1800);
-      await checkUserAuth();
-    } catch (e) { setMsg(e.message || 'Could not update credits'); }
-  };
 
   const doDelete = async () => {
     setDeleting(true); setDelErr(null);
@@ -65,30 +50,6 @@ export default function AccountSection() {
           <p className="text-xs text-[hsl(var(--c-dim))] mt-1.5">credits balance · 1 per OCR / translation · +4 daily login gift</p>
         </div>
       </div>
-
-      {user?.role === 'admin' && (
-      <div>
-        <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Add or remove credits (admin)</label>
-        <div className="flex items-center gap-2">
-          <div className="relative w-36">
-            <input
-              type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g. 7 or -7"
-              className="w-full bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg pl-9 pr-3 py-2 text-sm text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))]"
-            />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[hsl(var(--c-dim))]">{isRemove ? <Minus className="w-4 h-4" /> : <Zap className="w-4 h-4" />}</span>
-          </div>
-          <button
-            onClick={apply}
-            disabled={isZero}
-            className={`flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))]'}`}
-          >
-            Apply
-          </button>
-          {msg && <span className={`text-xs truncate ${msg.includes('Could') ? 'text-rose-400' : 'text-emerald-400'}`}>{msg}</span>}
-        </div>
-        <p className="text-[11px] text-[hsl(var(--c-dim))] mt-1.5">Positive number adds credits, negative (e.g. -7) removes them.</p>
-      </div>
-      )}
 
       {/* Delete account */}
       <div className="pt-3 border-t border-[hsl(var(--c-border))]">

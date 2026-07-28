@@ -1,19 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MARKER_TYPES, getMarkers, saveMarkers, DEFAULT_MARKERS } from '@/lib/markers';
 import { RotateCcw } from 'lucide-react';
 
 export default function MarkerSettings() {
   const [markers, setMarkers] = useState(() => getMarkers());
+  const [savedAt, setSavedAt] = useState(null);
+  useEffect(() => { if (savedAt) { const t = setTimeout(() => setSavedAt(null), 1400); return () => clearTimeout(t); } }, [savedAt]);
 
   const update = (id, field, val) => {
     const next = { ...markers, [id]: { ...markers[id], [field]: val } };
     setMarkers(next);
     saveMarkers(next);
+    setSavedAt(Date.now());
   };
 
   const reset = () => {
     setMarkers({ ...DEFAULT_MARKERS });
     saveMarkers({ ...DEFAULT_MARKERS });
+    setSavedAt(Date.now());
   };
 
   const inputCls = 'w-full bg-[hsl(var(--c-card))] border border-[hsl(var(--c-border))] rounded-md px-2.5 py-1.5 text-sm font-mono text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))]';
@@ -22,9 +26,12 @@ export default function MarkerSettings() {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-[hsl(var(--c-dim))]">Signs applied to each detected text type.</p>
-        <button onClick={reset} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-accent))] hover:opacity-80 shrink-0">
-          <RotateCcw className="w-3.5 h-3.5" /> Reset all
-        </button>
+        <div className="flex items-center gap-3 shrink-0">
+          <button onClick={reset} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-accent))] hover:opacity-80">
+            <RotateCcw className="w-3.5 h-3.5" /> Reset all
+          </button>
+          {savedAt && <span className="text-xs text-emerald-400">Saved ✓</span>}
+        </div>
       </div>
 
       <div className="space-y-2">

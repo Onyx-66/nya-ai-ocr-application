@@ -35,10 +35,8 @@ export default function AdminPanel() {
   const addCredits = async (id) => {
     const amt = Number(amounts[id] || 0);
     if (!amt || Number.isNaN(amt)) return;
-    const u = users.find((x) => x.id === id);
-    const cur = u?.credits ?? 0;
     try {
-      await base44.entities.User.update(id, { credits: Math.max(0, cur + amt) });
+      await base44.functions.invoke('manageCredits', { action: 'adjust', amount: amt, userId: id });
       setAmounts((a) => ({ ...a, [id]: '' }));
       load();
     } catch (e) { setErr(e.message); }

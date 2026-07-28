@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ScanText, Settings as SettingsIcon, Library as LibraryIcon, Activity, BarChart3, Zap } from 'lucide-react';
+import { ScanText, Settings as SettingsIcon, Library as LibraryIcon, Activity, BarChart3, Zap, Sparkles } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
@@ -11,6 +11,7 @@ import Library from '@/pages/Library';
 import Operations from '@/pages/Operations';
 import Usage from '@/pages/Usage';
 import Settings from '@/pages/Settings';
+import ScanAdvisor from '@/components/ScanAdvisor';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a688b2529efa59d9f9f1863/5009bade8_AddText_07-27-012338.png';
 
@@ -36,6 +37,7 @@ export default function Layout() {
   const { pathname } = useLocation();
   const { user, checkUserAuth } = useAuth();
   const { toast } = useToast();
+  const [advisorOpen, setAdvisorOpen] = useState(false);
 
   // First-use welcome credits (15) + free daily login gift (+4).
   useEffect(() => {
@@ -76,8 +78,17 @@ export default function Layout() {
             );
           })}
         </nav>
-        <div className="p-3 border-t border-[hsl(var(--c-border))] text-xs text-[hsl(var(--c-dim))] hidden xl:block">
-          AI OCR for manga &amp; webtoons
+        <div className="p-3 border-t border-[hsl(var(--c-border))] space-y-2">
+          <div className="flex items-center gap-1.5 text-sm justify-center xl:justify-start">
+            <Zap className="w-4 h-4 text-[hsl(var(--c-accent))] shrink-0" />
+            <span className="font-semibold text-[hsl(var(--c-text))]">{user?.credits ?? '…'}</span>
+            <span className="text-xs text-[hsl(var(--c-dim))] hidden xl:inline">credits</span>
+          </div>
+          <button onClick={() => setAdvisorOpen(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] text-[hsl(var(--c-text))] justify-center xl:justify-start">
+            <Sparkles className="w-4 h-4 text-[hsl(var(--c-accent))] shrink-0" />
+            <span className="hidden xl:block">Scan advisor</span>
+          </button>
+          <p className="text-xs text-[hsl(var(--c-dim))] hidden xl:block">AI OCR for manga &amp; webtoons</p>
         </div>
       </aside>
 
@@ -89,7 +100,10 @@ export default function Layout() {
             <Image src={LOGO_URL} fittingType="fill" className="w-full h-full" />
           </div>
           <span className="font-heading font-semibold tracking-tight text-[hsl(var(--c-text))]">Nya Smart OCR</span>
-          <span className="ml-auto flex items-center gap-1 text-xs text-[hsl(var(--c-dim))]">
+          <button onClick={() => setAdvisorOpen(true)} className="ml-auto flex items-center gap-1.5 text-xs bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] text-[hsl(var(--c-text))] rounded-lg px-2.5 py-1.5 font-medium shrink-0">
+            <Sparkles className="w-4 h-4 text-[hsl(var(--c-accent))]" /><span className="hidden sm:inline">Advisor</span>
+          </button>
+          <span className="flex items-center gap-1 text-xs text-[hsl(var(--c-dim))] shrink-0">
             <Zap className="w-3.5 h-3.5 text-[hsl(var(--c-accent))]" />
             <span className="font-semibold text-[hsl(var(--c-text))]">{user?.credits ?? '…'}</span>
           </span>
@@ -133,6 +147,8 @@ export default function Layout() {
           );
         })}
       </nav>
+
+      <ScanAdvisor open={advisorOpen} onClose={() => setAdvisorOpen(false)} />
     </div>
   );
 }
