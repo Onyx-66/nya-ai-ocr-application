@@ -11,27 +11,18 @@ const elapsed = (s, e) => {
   return `${m}m ${sec % 60}s`;
 };
 
-const FIN_FILTERS = [{ id: 'all', label: 'All' }, { id: 'ocr', label: 'OCR' }, { id: 'translation', label: 'Translation' }];
-
 export default function Operations() {
   const [ops, setOps] = useState([]);
   const [now, setNow] = useState(Date.now());
-  const [finFilter, setFinFilter] = useState('all');
   useEffect(() => subscribe(setOps), []);
   useEffect(() => { if (ops.some((o) => o.status === 'running')) { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); } }, [ops]);
 
   const active = ops.filter((o) => o.status === 'running');
   const finished = ops.filter((o) => o.status !== 'running');
-  const finishedView = finFilter === 'all' ? finished : finished.filter((o) => o.type === finFilter);
+  const doneCount = ops.filter((o) => o.status === 'done').length;
   const avgSec = finished.length ? Math.round(finished.reduce((a, o) => a + ((o.finishedAt || now) - o.startedAt), 0) / finished.length / 1000) : 0;
 
   const stopRequestedNow = isStopRequested();
-
-  const stats = [
-    { icon: ListChecks, label: 'Total', value: ops.length, color: 'text-[hsl(var(--c-text))]', spin: false },
-    { icon: Loader2, label: 'Running', value: active.length, color: 'text-[hsl(var(--c-accent))]', spin: true },
-    { icon: Clock, label: 'Avg / job', value: `${avgSec}s`, color: 'text-[hsl(var(--c-text))]', spin: false }
-  ];
 
   return (
     <div className="p-4 sm:p-6 md:p-10 max-w-3xl mx-auto">
@@ -45,21 +36,19 @@ export default function Operations() {
       </div>
       <p className="text-[hsl(var(--c-dim))] text-sm mb-6">Active and recent OCR / translation jobs across all chapters.</p>
 
-      {/* Summary — single organized card */}
-      <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4 mb-5">
-        <div className="grid grid-cols-3 divide-x divide-[hsl(var(--c-border))]">
-          {stats.map((s) => {
-            const Icon = s.icon;
-            return (
-              <div key={s.label} className="px-2 sm:px-4 flex flex-col items-center sm:items-start gap-1.5">
-                <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]">
-                  <Icon className={`w-4 h-4 ${s.spin ? 'animate-spin' : ''}`} />
-                  <span className="text-[11px] uppercase tracking-wide">{s.label}</span>
-                </div>
-                <p className={`text-2xl font-semibold ${s.color}`}>{s.value}</p>
-              </div>
-            );
-          })}
+      {/* Summary */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
+          <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]"><ListChecks className="w-4 h-4" /><span className="text-[11px] uppercase tracking-wide">Total</span></div>
+          <p className="text-2xl font-semibold text-[hsl(var(--c-text))] mt-1">{ops.length}</p>
+        </div>
+        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
+          <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]"><Loader2 className="w-4 h-4" /><span className="text-[11px] uppercase tracking-wide">Running</span></div>
+          <p className="text-2xl font-semibold text-[hsl(var(--c-accent))] mt-1">{active.length}</p>
+        </div>
+        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
+          <div className="flex items-center gap-2 text-[hsl(var(--c-dim))]"><Clock className="w-4 h-4" /><span className="text-[11px] uppercase tracking-wide">Avg / job</span></div>
+          <p className="text-2xl font-semibold text-[hsl(var(--c-text))] mt-1">{avgSec}s</p>
         </div>
       </div>
 
@@ -114,18 +103,9 @@ export default function Operations() {
 
           {finished.length > 0 && (
             <section>
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <h2 className="text-xs uppercase tracking-wide text-[hsl(var(--c-dim))]">Finished · {finished.length}</h2>
-                <div className="flex gap-1 p-1 bg-[hsl(var(--c-input))] rounded-lg border border-[hsl(var(--c-border))] w-fit">
-                  {FIN_FILTERS.map((f) => (
-                    <button key={f.id} onClick={() => setFinFilter(f.id)} className={`px-2.5 py-1 rounded-md text-[11px] transition-colors ${finFilter === f.id ? 'bg-[hsl(var(--c-accent))] text-white' : 'text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))]'}`}>{f.label}</button>
-                  ))}
-                </div>
-              </div>
+              <h2 className="text-xs uppercase tracking-wide text-[hsl(var(--c-dim))] mb-2">Finished · {finished.length}</h2>
               <div className="space-y-3">
-                {finishedView.length === 0 ? (
-                  <p className="text-xs text-[hsl(var(--c-dim))] py-4 text-center">No {finFilter} operations.</p>
-                ) : finishedView.map((o) => (
+                {finished.map((o) => (
                   <div key={o.id} className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4 flex items-center gap-3">
                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${o.status === 'done' ? 'bg-emerald-500/15' : 'bg-rose-500/15'}`}>
                       {o.status === 'done' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-rose-400" />}

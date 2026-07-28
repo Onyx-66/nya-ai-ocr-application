@@ -11,7 +11,7 @@ import GlobalOptions from '@/components/batch/GlobalOptions';
 import ChapterCard from '@/components/batch/ChapterCard';
 import ImageLightbox from '@/components/batch/ImageLightbox';
 import ImportModal from '@/components/batch/ImportModal';
-import { Trash2, Sparkles, Zap, Play, Square, ChevronsDown, ChevronsUp, UploadCloud } from 'lucide-react';
+import { Trash2, Sparkles, Zap, Play, Square, ChevronsDown, ChevronsUp } from 'lucide-react';
 
 const newChapter = (overrides = {}) => ({
   id: crypto.randomUUID(), title: '', images: [], expanded: true,
@@ -70,9 +70,9 @@ export default function BatchWorkspace() {
   };
 
   const update = (id, patch) => store.updateChapter(id, patch);
+  const addChapter = () => store.addChapters([newChapter()]);
   const addChapters = (list) => store.addChapters(list.map((c) => newChapter({ title: c.title || '', images: c.images || [] })));
   const removeChapter = (id) => store.removeChapter(id);
-  const deleteLastChapter = () => { const list = store.getState().chapters; if (list.length) store.removeChapter(list[list.length - 1].id); };
 
   const onRunOcr = (id) => { const ch = store.getState().chapters.find((c) => c.id === id); if (ch) engine.runChapterOcr(ch, makeCtx()); };
   const onTranslate = (id) => { const ch = store.getState().chapters.find((c) => c.id === id); if (ch) engine.runChapterTranslate(ch, makeCtx()); };
@@ -107,10 +107,10 @@ export default function BatchWorkspace() {
 
           <div className="grid grid-cols-2 gap-2">
             <button onClick={() => setImportOpen(true)} className="flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] text-white rounded-lg px-3 py-2.5 text-sm font-medium">
-              <UploadCloud className="w-4 h-4" /> Import
+              <Sparkles className="w-4 h-4" /> Import
             </button>
-            <button onClick={deleteLastChapter} disabled={chapters.length === 0} className="flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg px-3 py-2.5 text-sm font-medium">
-              <Trash2 className="w-4 h-4" /> Delete Chapter
+            <button onClick={addChapter} className="flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg px-3 py-2.5 text-sm font-medium">
+              <Trash2 className="w-4 h-4" /> Empty chapter
             </button>
           </div>
           <button
@@ -130,7 +130,7 @@ export default function BatchWorkspace() {
           {chapters.length === 0 && (
             <div className="rounded-xl border border-dashed border-[hsl(var(--c-border))] p-10 text-center text-[hsl(var(--c-dim))]">
               <Sparkles className="w-8 h-8 mx-auto mb-2" />
-              <p className="text-sm">No chapters yet — click <span className="text-[hsl(var(--c-text))] font-medium">Import</span> to add images.</p>
+              <p className="text-sm">No chapters yet — click <span className="text-[hsl(var(--c-text))] font-medium">Import</span> to add images, or add an empty chapter.</p>
             </div>
           )}
 

@@ -78,9 +78,9 @@ export default function Usage() {
           {/* Daily usage */}
           <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] p-4">
             <h2 className="text-sm font-medium text-[hsl(var(--c-text))] mb-3">Daily credits · last 30 days</h2>
-            <div className="h-64">
+            <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={days} margin={{ top: 5, right: 12, left: -18, bottom: 40 }}>
+                <AreaChart data={days} margin={{ top: 5, right: 8, left: -18, bottom: 0 }}>
                   <defs>
                     <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={ACCENT} stopOpacity={0.5} />
@@ -88,7 +88,7 @@ export default function Usage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(217 33% 20%)" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fill: 'hsl(215 20% 55%)', fontSize: 10 }} tickLine={false} axisLine={false} interval={0} angle={-40} textAnchor="end" height={50} />
+                  <XAxis dataKey="label" tick={{ fill: 'hsl(215 20% 55%)', fontSize: 11 }} tickLine={false} axisLine={false} interval={3} />
                   <YAxis allowDecimals={false} tick={{ fill: 'hsl(215 20% 55%)', fontSize: 11 }} tickLine={false} axisLine={false} width={28} />
                   <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'hsl(215 20% 70%)' }} />
                   <Area type="monotone" dataKey="count" stroke={ACCENT} strokeWidth={2} fill="url(#g1)" />
