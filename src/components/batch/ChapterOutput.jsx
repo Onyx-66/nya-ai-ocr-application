@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import OutputPreview from '@/components/OutputPreview';
 import { Download, CloudUpload, Loader2 } from 'lucide-react';
+import { downloadTextFile, mimeFor } from '@/lib/fileDownload';
 
 export default function ChapterOutput({
   chapter, format, translateEnabled, targetLanguage, uploadFolder,
@@ -20,13 +21,9 @@ export default function ChapterOutput({
   const suffix = isTranslate ? '_' + targetLanguage.replace(/\s+/g, '_') : '';
   const filename = `${baseName}${suffix}.${format}`;
 
-  const download = () => {
+  const download = async () => {
     if (!hasContent) return;
-    const blob = new Blob([content], { type: format === 'md' ? 'text/markdown' : 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename; a.click();
-    URL.revokeObjectURL(url);
+    await downloadTextFile(filename, content, format);
   };
 
   const upload = async () => {
@@ -35,7 +32,7 @@ export default function ChapterOutput({
     try {
       const res = await base44.functions.invoke('driveUploadFile', {
         filename, content,
-        mimeType: format === 'md' ? 'text/markdown' : 'text/plain',
+        mimeType: mimeFor(format),
         folderId: uploadFolder || null
       });
       setUploadResult(res.data);

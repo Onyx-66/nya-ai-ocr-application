@@ -2,7 +2,8 @@ import { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import ChapterImages from '@/components/batch/ChapterImages';
 import ChapterOutput from '@/components/batch/ChapterOutput';
-import { ChevronDown, Sparkles, Languages, Plus, Trash2, Loader2, Images } from 'lucide-react';
+import { ChevronDown, Sparkles, Languages, Plus, Trash2, Loader2, Images, Download } from 'lucide-react';
+import { downloadTextFile } from '@/lib/fileDownload';
 
 export default function ChapterCard({
   chapter, index, serieTitle, format, translateEnabled, targetLanguage, uploadFolder,
@@ -14,6 +15,13 @@ export default function ChapterCard({
 
   const set = (patch) => onUpdate(chapter.id, patch);
   const resetOcr = { ocrStatus: 'idle', ocrProgress: 0, perPage: null, ocrOutput: '', ocrError: '' };
+  const quickDl = (kind) => {
+    const content = kind === 'tl' ? chapter.translateOutput : chapter.ocrOutput;
+    if (!content) return;
+    const base = [serieTitle, chapter.title].map((s) => s && s.trim()).filter(Boolean).join('_') || 'nya_ocr';
+    const suffix = kind === 'tl' ? '_' + (targetLanguage || '').replace(/\s+/g, '_') : '';
+    downloadTextFile(`${base}${suffix}.${format}`, content, format);
+  };
 
   const badge = (label, status, progress) => {
     if (status === 'running') return <span className="text-xs text-[hsl(var(--c-accent))] flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> {label} {progress ?? 0}%</span>;
@@ -98,6 +106,21 @@ export default function ChapterCard({
               </button>
             )}
           </div>
+
+          {(chapter.ocrOutput || (translateEnabled && chapter.translateOutput)) && (
+            <div className="flex flex-wrap gap-2">
+              {chapter.ocrOutput && (
+                <button onClick={() => quickDl('ocr')} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-2.5 py-1.5">
+                  <Download className="w-3.5 h-3.5" /> Download OCR
+                </button>
+              )}
+              {translateEnabled && chapter.translateOutput && (
+                <button onClick={() => quickDl('tl')} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-2.5 py-1.5">
+                  <Download className="w-3.5 h-3.5" /> Download TL
+                </button>
+              )}
+            </div>
+          )}
 
           {(chapter.ocrOutput || chapter.translateOutput) && (
             <ChapterOutput

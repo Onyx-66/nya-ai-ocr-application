@@ -4,7 +4,7 @@ import LanguageSelect from '@/components/batch/LanguageSelect';
 import { Switch } from '@/components/ui/switch';
 import { Settings2 } from 'lucide-react';
 
-const FORMATS = [{ id: 'txt', label: '.txt' }, { id: 'md', label: '.md' }];
+const FORMATS = [{ id: 'txt', label: '.txt' }, { id: 'md', label: '.md' }, { id: 'docx', label: '.docx' }];
 
 export default function DefaultSettings() {
   const d = getDefaults();

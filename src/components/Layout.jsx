@@ -49,7 +49,7 @@ export default function Layout() {
           <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-black">
             <Image src={LOGO_URL} fittingType="fill" className="w-full h-full" />
           </div>
-          <span className="hidden xl:block font-heading font-semibold tracking-tight">MangaOCR</span>
+          <span className="hidden xl:block font-heading font-semibold tracking-tight">Nya Smart OCR</span>
         </div>
         <nav className="flex-1 p-2 xl:p-3 space-y-1">
           {navItems.map(({ to, label, icon: Icon }) => {
@@ -77,7 +77,7 @@ export default function Layout() {
           <div className="w-7 h-7 rounded-lg overflow-hidden bg-black shrink-0">
             <Image src={LOGO_URL} fittingType="fill" className="w-full h-full" />
           </div>
-          <span className="font-heading font-semibold tracking-tight text-[hsl(var(--c-text))]">MangaOCR</span>
+          <span className="font-heading font-semibold tracking-tight text-[hsl(var(--c-text))]">Nya Smart OCR</span>
           <span className="ml-auto flex items-center gap-1 text-xs text-[hsl(var(--c-dim))]">
             <Zap className="w-3.5 h-3.5 text-[hsl(var(--c-accent))]" />
             <span className="font-semibold text-[hsl(var(--c-text))]">{user?.credits ?? '…'}</span>

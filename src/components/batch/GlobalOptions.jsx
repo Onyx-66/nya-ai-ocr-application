@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import DriveFolderButton from '@/components/batch/DriveFolderButton';
 import ExportTemplateSelect from '@/components/batch/ExportTemplateSelect';
 
-const FORMATS = [{ id: 'txt', label: '.txt' }, { id: 'md', label: '.md' }];
+const FORMATS = [{ id: 'txt', label: '.txt' }, { id: 'md', label: '.md' }, { id: 'docx', label: '.docx' }];
 
 export default function GlobalOptions({ serieTitle, format, translateEnabled, targetLanguage, emptyLine, uploadFolder, onField }) {
   const [open, setOpen] = useState(true);

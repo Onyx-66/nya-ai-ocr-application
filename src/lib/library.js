@@ -88,17 +88,16 @@ export async function saveToLibrary(entries) {
   let saved = 0;
   for (const e of entries) {
     const serieDir = await lib.getDirectoryHandle(safeName(e.serie, 'Untitled'), { create: true });
-    const fileName = `Chapter ${e.chapter}.${e.format === 'md' ? 'md' : 'txt'}`;
-    if (e.type === 'translation') {
-      const tlDir = await serieDir.getDirectoryHandle('translation', { create: true });
-      const langDir = await tlDir.getDirectoryHandle(safeName(e.language, 'Unknown'), { create: true });
-      const fh = await langDir.getFileHandle(fileName, { create: true });
-      const w = await fh.createWritable(); await w.write(e.content); await w.close();
-    } else {
-      const ocrDir = await serieDir.getDirectoryHandle('ocr', { create: true });
-      const fh = await ocrDir.getFileHandle(fileName, { create: true });
-      const w = await fh.createWritable(); await w.write(e.content); await w.close();
-    }
+    const ext = e.format === 'md' ? 'md' : e.format === 'docx' ? 'docx' : 'txt';
+    const fileName = `Chapter ${e.chapter}.${ext}`;
+    const dir = e.type === 'translation'
+      ? await (await serieDir.getDirectoryHandle('translation', { create: true })).getDirectoryHandle(safeName(e.language, 'Unknown'), { create: true })
+      : await serieDir.getDirectoryHandle('ocr', { create: true });
+    const fh = await dir.getFileHandle(fileName, { create: true });
+    const w = await fh.createWritable();
+    if (e.format === 'docx') { const { docxBlobFromText } = await import('@/lib/docx'); await w.write(await docxBlobFromText(e.content)); }
+    else { await w.write(e.content); }
+    await w.close();
     saved++;
   }
   markSaved(entries.map((e) => e.id));
@@ -112,11 +111,13 @@ export async function downloadZip(entries) {
   const base = 'nya ai ocr/library/';
   for (const e of entries) {
     const serie = safeName(e.serie, 'Untitled');
-    const file = `Chapter ${e.chapter}.${e.format === 'md' ? 'md' : 'txt'}`;
+    const ext = e.format === 'md' ? 'md' : e.format === 'docx' ? 'docx' : 'txt';
+    const file = `Chapter ${e.chapter}.${ext}`;
     const path = e.type === 'translation'
       ? `${base}${serie}/translation/${safeName(e.language, 'Unknown')}/${file}`
       : `${base}${serie}/ocr/${file}`;
-    zip.file(path, e.content);
+    if (e.format === 'docx') { const { docxBlobFromText } = await import('@/lib/docx'); zip.file(path, await docxBlobFromText(e.content)); }
+    else { zip.file(path, e.content); }
   }
   const blob = await zip.generateAsync({ type: 'blob' });
   const url = URL.createObjectURL(blob);
