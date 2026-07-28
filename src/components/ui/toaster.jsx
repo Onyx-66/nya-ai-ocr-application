@@ -29,7 +29,9 @@ export function Toaster() {
         const Icon = ICONS[variant] || ICONS.default;
         return (
           <Toast key={id} variant={variant} {...props}>
-            <Icon className={`h-5 w-5 flex-shrink-0 mt-0.5 ${ICON_CLASS[variant] || ICON_CLASS.default}`} />
+            {(variant === 'success' || variant === 'destructive') && (
+              <Icon className={`h-5 w-5 flex-shrink-0 mt-0.5 ${ICON_CLASS[variant]}`} />
+            )}
             <div className="grid gap-1 flex-1">
               {title && <ToastTitle>{title}</ToastTitle>}
               {description && (

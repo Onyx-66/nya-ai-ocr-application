@@ -52,7 +52,7 @@ export default function Layout() {
       const gifted = !!patch.last_daily_gift;
       base44.auth.updateMe(patch).then(() => {
         checkUserAuth();
-        if (gifted) toast({ variant: 'success', title: 'Daily login gift', description: '+4 credits added to your account.' });
+        if (gifted) toast({ variant: 'default', title: 'Daily login gift', description: '+4 credits added to your account.' });
       }).catch(() => {});
     }
   }, [user]);
