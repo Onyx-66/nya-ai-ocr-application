@@ -9,7 +9,7 @@ import GlobalOptions from '@/components/batch/GlobalOptions';
 import ChapterCard from '@/components/batch/ChapterCard';
 import ImageLightbox from '@/components/batch/ImageLightbox';
 import BatchImport from '@/components/batch/BatchImport';
-import { Plus, Sparkles, Languages, Loader2, ScanText, Zap } from 'lucide-react';
+import { Trash2, Sparkles, Languages, Loader2, Zap } from 'lucide-react';
 
 const newChapter = (overrides = {}) => ({
   id: crypto.randomUUID(), title: '', images: [],
@@ -151,11 +151,11 @@ export default function BatchWorkspace() {
         </p>
 
         <div className="grid lg:grid-cols-[1fr_340px] gap-6 items-start">
-          <div className="space-y-4 order-2 lg:order-1 min-w-0">
+          <div className="space-y-4 order-1 lg:order-1 min-w-0">
             <div className="flex flex-wrap gap-2 items-start">
-              <BatchImport onChapters={addChapters} />
-              <button onClick={addChapter} className="flex items-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] text-[hsl(var(--c-text))] rounded-lg px-3 py-2 text-sm font-medium">
-                <Plus className="w-4 h-4" /> Empty chapter
+              {chapters.length > 0 && <BatchImport onChapters={addChapters} />}
+              <button onClick={addChapter} className="flex items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg px-3 py-2 text-sm font-medium">
+                <Trash2 className="w-4 h-4" /> Empty chapter
               </button>
               <button
                 onClick={runAllOcr}
@@ -178,10 +178,7 @@ export default function BatchWorkspace() {
             </div>
 
             {chapters.length === 0 && (
-              <div className="rounded-xl border border-dashed border-[hsl(var(--c-border))] p-10 text-center text-[hsl(var(--c-dim))]">
-                <ScanText className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-sm">Import a Drive folder with chapters, or add an empty chapter to begin.</p>
-              </div>
+              <BatchImport onChapters={addChapters} defaultOpen />
             )}
 
             {chapters.map((c, i) => (
@@ -197,7 +194,7 @@ export default function BatchWorkspace() {
             ))}
           </div>
 
-          <div className="order-1 lg:order-2 lg:sticky lg:top-6">
+          <div className="order-2 lg:order-2 lg:sticky lg:top-6">
             <GlobalOptions
               serieTitle={serieTitle} format={format}
               translateEnabled={translateEnabled} targetLanguage={targetLanguage}

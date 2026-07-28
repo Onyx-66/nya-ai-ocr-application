@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import DriveFolderPicker from '@/components/DriveFolderPicker';
+import { Languages, BookType, ChevronDown } from 'lucide-react';
 import LanguageSelect from '@/components/batch/LanguageSelect';
 import { Switch } from '@/components/ui/switch';
-import { Languages, BookType, ChevronDown } from 'lucide-react';
+import DriveFolderButton from '@/components/batch/DriveFolderButton';
 
 const FORMATS = [{ id: 'txt', label: '.txt' }, { id: 'md', label: '.md' }];
 
@@ -10,10 +10,7 @@ export default function GlobalOptions({ serieTitle, format, translateEnabled, ta
   const [open, setOpen] = useState(true);
   return (
     <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] overflow-hidden">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center gap-2 p-4 text-left"
-      >
+      <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center gap-2 p-4 text-left">
         <BookType className="w-4 h-4 text-[hsl(var(--c-accent))]" />
         <span className="text-sm font-medium text-[hsl(var(--c-text))] flex-1">Options</span>
         <ChevronDown className={`w-4 h-4 text-[hsl(var(--c-dim))] transition-transform ${open ? '' : '-rotate-90'}`} />
@@ -61,7 +58,7 @@ export default function GlobalOptions({ serieTitle, format, translateEnabled, ta
 
           <div className="border-t border-[hsl(var(--c-border))] pt-4">
             <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Default Google Drive upload folder</label>
-            <DriveFolderPicker value={uploadFolder} onChange={(v) => onField('uploadFolder', v)} />
+            <DriveFolderButton value={uploadFolder} onChange={(v) => onField('uploadFolder', v)} />
           </div>
         </div>
       )}

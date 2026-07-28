@@ -85,14 +85,16 @@ export default function Library() {
       </section>
 
       {/* Actions */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        <button onClick={saveAll} disabled={busy || !filtered.length} className="flex items-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] disabled:opacity-40 text-white rounded-lg px-3 py-2 text-sm font-medium">
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderDown className="w-4 h-4" />}Save all to device
-        </button>
-        <button onClick={dlZip} disabled={busy || !filtered.length} className="flex items-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-40 text-[hsl(var(--c-text))] rounded-lg px-3 py-2 text-sm font-medium">
-          <Download className="w-4 h-4" />Download ZIP
-        </button>
-        <button onClick={() => { clearLibrary(); setEntries([]); flash('Library cleared'); }} disabled={!entries.length} className="flex items-center gap-2 ml-auto text-rose-400 hover:bg-rose-500/10 disabled:opacity-40 rounded-lg px-3 py-2 text-sm font-medium">
+      <div className="space-y-2 mb-4">
+        <div className="flex gap-2">
+          <button onClick={saveAll} disabled={busy || !filtered.length} className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] disabled:opacity-40 text-white rounded-lg px-3 py-2 text-sm font-medium">
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderDown className="w-4 h-4" />}Save all to device
+          </button>
+          <button onClick={dlZip} disabled={busy || !filtered.length} className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-40 text-[hsl(var(--c-text))] rounded-lg px-3 py-2 text-sm font-medium">
+            <Download className="w-4 h-4" />Download ZIP
+          </button>
+        </div>
+        <button onClick={() => { clearLibrary(); setEntries([]); flash('Library cleared'); }} disabled={!entries.length} className="ml-auto flex items-center gap-2 text-rose-400 hover:bg-rose-500/10 disabled:opacity-40 rounded-lg px-3 py-2 text-sm font-medium">
           <Trash2 className="w-4 h-4" />Clear
         </button>
       </div>
