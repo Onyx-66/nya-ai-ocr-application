@@ -40,7 +40,12 @@ export function ThemeProvider({ children }) {
 
   // Apply theme to <html>. We persist only on explicit user choice (setTheme),
   // so a user who never picked a theme keeps following the system preference.
-  useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    // Sync Tailwind dark mode so shadcn primitives (dialogs, sheets, selects)
+    // adopt the dark palette for every theme except the light theme.
+    document.documentElement.classList.toggle('dark', theme !== 'light');
+  }, [theme]);
   useEffect(() => {
     localStorage.setItem('mangaocr_font', fontFamily);
     const f = FONTS.find((x) => x.id === fontFamily) || FONTS[0];
