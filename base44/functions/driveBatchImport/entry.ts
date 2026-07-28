@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { ZIP_MIMES, uploadImage, listFolderImages, extractZipImages } from '../../shared/driveImport.ts';
+import { DRIVE_CONNECTOR_ID } from '../../shared/driveConnector.ts';
 
 export default async function(req: Request): Promise<Response> {
   try {
@@ -11,7 +12,7 @@ export default async function(req: Request): Promise<Response> {
     const { folderId } = body || {};
     if (!folderId) return Response.json({ error: 'A Google Drive folder ID is required' }, { status: 400 });
 
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('googledrive');
+    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(DRIVE_CONNECTOR_ID);
     const auth = { Authorization: `Bearer ${accessToken}` };
 
     const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?fields=id,name,mimeType`, { headers: auth });

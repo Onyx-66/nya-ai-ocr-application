@@ -1,26 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import JSZip from 'jszip';
-import { Loader2, UploadCloud, FolderOpen, FileArchive, Link2, X, ChevronDown, Check } from 'lucide-react';
+import DriveBrowser from '@/components/batch/DriveBrowser';
+import { DRIVE_CONNECTOR_ID } from '@/lib/driveConnector';
+import { Loader2, UploadCloud, FolderOpen, FileArchive, Link2, X, ChevronDown, Check, HardDrive } from 'lucide-react';
 
 const IMAGE_RE = /\.(png|jpe?g|webp|gif|bmp)$/i;
 const sortByName = (a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true });
 
-function extractId(link) {
-  if (!link) return '';
-  const mFolder = link.match(/\/folders\/([a-zA-Z0-9_-]+)/);
-  if (mFolder) return mFolder[1];
-  const mId = link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (mId) return mId[1];
-  return /^[a-zA-Z0-9_-]{10,}$/.test(link.trim()) ? link.trim() : '';
-}
-
 export default function ImportModal({ open, onClose, onChapters }) {
-  const [link, setLink] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [browseOpen, setBrowseOpen] = useState(false);
   const [drag, setDrag] = useState(false);
+  const [driveBrowse, setDriveBrowse] = useState(false);
+  const [driveFolder, setDriveFolder] = useState(null);
+  const [driveConnected, setDriveConnected] = useState(null);
+  const [driveBusy, setDriveBusy] = useState(false);
   const zipRef = useRef(null);
   const folderRef = useRef(null);
   const browseRef = useRef(null);
@@ -94,20 +90,35 @@ export default function ImportModal({ open, onClose, onChapters }) {
     setLoading(false);
   };
 
-  const importDrive = async () => {
-    const id = extractId(link);
-    if (!id) { setError('Paste a valid Google Drive folder link'); return; }
+  const checkDrive = async () => {
+    try {
+      const res = await base44.functions.invoke('driveBrowseFolders', { parentId: null });
+      setDriveConnected(!!(res.data && res.data.folders));
+    } catch { setDriveConnected(false); }
+  };
+  const connectDrive = async () => {
+    setDriveBusy(true);
+    try {
+      const url = await base44.connectors.connectAppUser(DRIVE_CONNECTOR_ID);
+      const popup = window.open(url, '_blank');
+      const timer = setInterval(() => {
+        if (!popup || popup.closed) { clearInterval(timer); checkDrive(); setDriveBusy(false); }
+      }, 500);
+    } catch { setDriveBusy(false); }
+  };
+  const importDriveFolder = async () => {
+    const id = driveFolder?.id || 'root';
     setLoading(true); setError(null);
     try {
       const res = await base44.functions.invoke('driveBatchImport', { folderId: id });
       const chs = (res.data && res.data.chapters) || [];
       if (chs.length) { onChapters(chs); finish(); }
       else setError('No chapters found — each subfolder, ZIP, or image inside becomes a chapter');
-    } catch (e) { setError(e.message || 'Import failed (connect Google Drive in Settings)'); }
+    } catch (e) { setError(e.message || 'Import failed — connect Google Drive in Settings'); }
     setLoading(false);
   };
 
-  const finish = () => { setLink(''); setError(null); onClose(); };
+  const finish = () => { setDriveFolder(null); setError(null); onClose(); };
 
   const onDrop = async (e) => {
     e.preventDefault(); setDrag(false);
@@ -131,6 +142,8 @@ export default function ImportModal({ open, onClose, onChapters }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
+
+  useEffect(() => { if (open && driveConnected === null) checkDrive(); }, [open]);
 
   if (!open) return null;
   return (
@@ -183,19 +196,35 @@ export default function ImportModal({ open, onClose, onChapters }) {
           </div>
 
           <div>
-            <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Paste a Google Drive folder link</label>
-            <div className="flex gap-2">
-              <input
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="https://drive.google.com/drive/folders/…"
-                className="flex-1 bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg px-3 py-2 text-sm text-[hsl(var(--c-text))] placeholder:text-[hsl(var(--c-dim))] focus:outline-none focus:border-[hsl(var(--c-accent))]"
-              />
-              <button onClick={importDrive} disabled={loading} className="flex items-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-50 text-[hsl(var(--c-text))] rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Import
+            <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">From your Google Drive</label>
+            {driveConnected === false ? (
+              <div className="flex items-center justify-between gap-2 bg-[hsl(var(--c-soft))] rounded-lg p-3">
+                <span className="text-xs text-[hsl(var(--c-dim))]">Connect your Google Drive first.</span>
+                <button onClick={connectDrive} disabled={driveBusy} className="flex items-center gap-1.5 text-xs text-white bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] rounded-lg px-3 py-1.5 disabled:opacity-50">
+                  <Link2 className="w-3.5 h-3.5" /> Connect
+                </button>
+              </div>
+            ) : driveFolder ? (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 flex items-center gap-2 bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg px-3 py-2 text-sm text-[hsl(var(--c-text))] min-w-0">
+                  <HardDrive className="w-4 h-4 text-[hsl(var(--c-accent))] shrink-0" />
+                  <span className="truncate">{driveFolder.name}</span>
+                </div>
+                <button onClick={() => setDriveFolder(null)} title="Clear" className="flex items-center gap-1.5 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] text-[hsl(var(--c-text-soft))] rounded-lg px-3 py-2 text-sm shrink-0">
+                  <X className="w-4 h-4" />
+                </button>
+                <button onClick={importDriveFolder} disabled={loading} className="flex items-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] disabled:opacity-50 text-white rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap shrink-0">
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Import
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setDriveBrowse(true)} disabled={loading} className="w-full flex items-center justify-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-50 text-[hsl(var(--c-text))] rounded-lg px-4 py-3 text-sm font-medium">
+                <FolderOpen className="w-4 h-4 text-[hsl(var(--c-accent))]" /> Browse Google Drive
               </button>
-            </div>
+            )}
           </div>
+
+          <DriveBrowser open={driveBrowse} onClose={() => setDriveBrowse(false)} onSelect={(f) => setDriveFolder({ id: f.id, name: f.name })} />
 
           {error && <p className="text-xs text-rose-400">{error}</p>}
         </div>

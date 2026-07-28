@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { DRIVE_CONNECTOR_ID } from '../../shared/driveConnector.ts';
 
 export default async function(req: Request): Promise<Response> {
   try {
@@ -8,7 +9,7 @@ export default async function(req: Request): Promise<Response> {
 
     const body = await req.json().catch(() => ({}));
     const { parentId } = body || {};
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('googledrive');
+    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(DRIVE_CONNECTOR_ID);
     const auth = { Authorization: `Bearer ${accessToken}` };
 
     const parentQ = parentId ? `'${parentId}' in parents` : `'root' in parents`;

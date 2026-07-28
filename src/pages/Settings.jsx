@@ -1,37 +1,17 @@
-import { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Loader2, CheckCircle2, XCircle, Cloud, Palette, Type, ListChecks, UserCircle, Sliders, Layers, RefreshCw } from 'lucide-react';
+import { Cloud, Palette, Type, ListChecks, UserCircle, Sliders, Layers } from 'lucide-react';
 import { useTheme, THEMES, FONTS } from '@/lib/ThemeContext';
 import SettingsSection from '@/components/SettingsSection';
 import MarkerSettings from '@/components/batch/MarkerSettings';
 import DefaultSettings from '@/components/batch/DefaultSettings';
-import DriveFolderButton from '@/components/batch/DriveFolderButton';
+import DriveConnection from '@/components/batch/DriveConnection';
 import ExportTemplateManager from '@/components/batch/ExportTemplateManager';
 import AccountSection from '@/components/batch/AccountSection';
 import AdminPanel from '@/components/batch/AdminPanel';
 
 export default function Settings() {
   const { user } = useAuth();
-  const [status, setStatus] = useState('checking');
-  const [email, setEmail] = useState(null);
-  const [folderId, setFolderId] = useState(() => localStorage.getItem('driveFolder') || null);
   const { theme, setTheme, fontFamily, setFontFamily, fontScale, setFontScale } = useTheme();
-
-  const check = async () => {
-    setStatus('checking');
-    try {
-      const res = await base44.functions.invoke('driveListFolders', {});
-      if (res.data && res.data.folders) { setStatus('connected'); setEmail(res.data.email || null); }
-      else setStatus('disconnected');
-    } catch { setStatus('disconnected'); }
-  };
-  useEffect(() => { check(); }, []);
-
-  const saveFolder = (id) => {
-    setFolderId(id);
-    if (id) localStorage.setItem('driveFolder', id); else localStorage.removeItem('driveFolder');
-  };
 
   return (
     <div className="p-4 sm:p-6 md:p-10 max-w-3xl mx-auto">
@@ -83,28 +63,8 @@ export default function Settings() {
           <MarkerSettings />
         </SettingsSection>
 
-        <SettingsSection icon={Cloud} title="Google Drive" subtitle="Connection and upload folder">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-[hsl(var(--c-soft))] flex items-center justify-center shrink-0">
-              {status === 'checking' ? <Loader2 className="w-5 h-5 animate-spin text-[hsl(var(--c-dim))]" />
-                : status === 'connected' ? <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                : <XCircle className="w-5 h-5 text-rose-400" />}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-[hsl(var(--c-text))]">{status === 'connected' ? 'Connected' : status === 'checking' ? 'Checking…' : 'Not connected'}</p>
-              <p className="text-xs text-[hsl(var(--c-dim))] truncate">{status === 'connected' && email ? email : 'Used to read source folders and upload output files.'}</p>
-            </div>
-            <button onClick={check} title="Re-check connection" className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-text-soft))] hover:text-[hsl(var(--c-text))] bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] rounded-lg px-3 py-1.5 shrink-0">
-              <RefreshCw className="w-3.5 h-3.5" /> Recheck
-            </button>
-          </div>
-          {status === 'connected' && (
-            <div className="border-t border-[hsl(var(--c-border))] pt-4">
-              <label className="block text-xs text-[hsl(var(--c-dim))] mb-1.5">Default upload folder</label>
-              <DriveFolderButton value={folderId} onChange={saveFolder} />
-            </div>
-          )}
-          <p className="text-[11px] text-[hsl(var(--c-dim))] mt-3">To link a different Google account, ask in the builder chat — “reconnect Google Drive” — and approve the prompt (one click).</p>
+        <SettingsSection icon={Cloud} title="Google Drive" subtitle="Your account and upload folder">
+          <DriveConnection />
         </SettingsSection>
 
         {user?.role === 'admin' && (

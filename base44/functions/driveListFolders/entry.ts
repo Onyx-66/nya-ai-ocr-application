@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { DRIVE_CONNECTOR_ID } from '../../shared/driveConnector.ts';
 
 export default async function(req: Request): Promise<Response> {
   try {
@@ -6,7 +7,7 @@ export default async function(req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('googledrive');
+    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(DRIVE_CONNECTOR_ID);
     const auth = { Authorization: `Bearer ${accessToken}` };
 
     // Folders
