@@ -1,11 +1,21 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw, Link2 } from 'lucide-react';
+
+function extractId(link) {
+  if (!link) return '';
+  const mFolder = link.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (mFolder) return mFolder[1];
+  const mId = link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (mId) return mId[1];
+  return /^[a-zA-Z0-9_-]{10,}$/.test(link.trim()) ? link.trim() : '';
+}
 
 export default function DriveFolderPicker({ value, onChange, placeholder = 'Root of My Drive' }) {
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [link, setLink] = useState('');
 
   const load = async () => {
     setLoading(true); setError(null);
@@ -20,27 +30,44 @@ export default function DriveFolderPicker({ value, onChange, placeholder = 'Root
 
   useEffect(() => { load(); }, []);
 
+  const onLink = (v) => {
+    setLink(v);
+    const id = extractId(v);
+    if (id) onChange(id);
+  };
+
   return (
-    <div className="flex items-center gap-2">
-      <select
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value || null)}
-        disabled={loading}
-        className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 disabled:opacity-50"
-      >
-        <option value="">{placeholder}</option>
-        {folders.map((f) => (
-          <option key={f.id} value={f.id}>{f.name}</option>
-        ))}
-      </select>
-      <button
-        onClick={load}
-        disabled={loading}
-        title="Refresh folders"
-        className="p-2 rounded-lg border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-      >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-      </button>
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg px-3 focus-within:border-[hsl(var(--c-accent))]">
+        <Link2 className="w-4 h-4 text-[hsl(var(--c-dim))]" />
+        <input
+          value={link}
+          onChange={(e) => onLink(e.target.value)}
+          placeholder="Paste a Drive folder link…"
+          className="flex-1 bg-transparent text-sm text-[hsl(var(--c-text))] placeholder:text-[hsl(var(--c-dim))] focus:outline-none py-2"
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <select
+          value={folders.some((f) => f.id === value) ? value : ''}
+          onChange={(e) => { onChange(e.target.value || null); setLink(''); }}
+          disabled={loading}
+          className="flex-1 bg-[hsl(var(--c-input))] border border-[hsl(var(--c-border))] rounded-lg px-3 py-2 text-sm text-[hsl(var(--c-text))] focus:outline-none focus:border-[hsl(var(--c-accent))] disabled:opacity-50"
+        >
+          <option value="">{value ? 'Custom folder (from link)' : placeholder}</option>
+          {folders.map((f) => (
+            <option key={f.id} value={f.id}>{f.name}</option>
+          ))}
+        </select>
+        <button
+          onClick={load}
+          disabled={loading}
+          title="Refresh folders"
+          className="p-2 rounded-lg border border-[hsl(var(--c-border))] text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] hover:bg-[hsl(var(--c-soft))]"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+        </button>
+      </div>
       {error && <span className="text-xs text-rose-400">{error}</span>}
     </div>
   );

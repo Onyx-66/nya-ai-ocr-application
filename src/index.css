@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Merriweather:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -41,7 +42,25 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* App theme tokens (MangaOCR) — overridden by [data-theme="..."] */
+    --font-scale: 1;
+    --app-font: ui-sans-serif, system-ui, sans-serif;
+    --c-bg: 222 47% 4%;
+    --c-card: 222 40% 9%;
+    --c-soft: 217 33% 14%;
+    --c-soft-2: 217 33% 20%;
+    --c-border: 217 33% 18%;
+    --c-input: 222 47% 6%;
+    --c-text: 210 40% 98%;
+    --c-text-soft: 213 27% 84%;
+    --c-dim: 215 20% 55%;
+    --c-accent: 243 75% 61%;
+    --c-accent-2: 245 76% 68%;
   }
+
+  html { font-size: calc(100% * var(--font-scale)); }
+  body { font-family: var(--app-font); }
 
   .dark {
     --background: 0 0% 3.9%;
@@ -77,15 +96,67 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* Theme: Ocean */
+  [data-theme="ocean"] {
+    --c-bg: 204 45% 5%; --c-card: 205 38% 10%; --c-soft: 205 33% 16%; --c-soft-2: 205 33% 22%;
+    --c-border: 205 33% 20%; --c-input: 205 45% 7%; --c-text: 200 50% 98%; --c-text-soft: 200 30% 85%;
+    --c-dim: 205 20% 58%; --c-accent: 199 89% 48%; --c-accent-2: 199 89% 56%;
+  }
+  /* Theme: Emerald */
+  [data-theme="emerald"] {
+    --c-bg: 160 40% 5%; --c-card: 160 33% 10%; --c-soft: 160 30% 16%; --c-soft-2: 160 30% 22%;
+    --c-border: 160 30% 20%; --c-input: 160 40% 7%; --c-text: 150 40% 98%; --c-text-soft: 150 25% 85%;
+    --c-dim: 155 20% 58%; --c-accent: 160 84% 39%; --c-accent-2: 160 84% 47%;
+  }
+  /* Theme: Rose */
+  [data-theme="rose"] {
+    --c-bg: 340 40% 6%; --c-card: 340 33% 11%; --c-soft: 340 28% 17%; --c-soft-2: 340 28% 23%;
+    --c-border: 340 28% 21%; --c-input: 340 40% 8%; --c-text: 330 40% 98%; --c-text-soft: 330 25% 86%;
+    --c-dim: 335 20% 60%; --c-accent: 330 81% 60%; --c-accent-2: 330 81% 68%;
+  }
+  /* Theme: Amber */
+  [data-theme="amber"] {
+    --c-bg: 30 35% 5%; --c-card: 32 30% 10%; --c-soft: 33 25% 16%; --c-soft-2: 33 25% 22%;
+    --c-border: 33 25% 20%; --c-input: 30 35% 7%; --c-text: 35 40% 98%; --c-text-soft: 35 25% 86%;
+    --c-dim: 35 20% 58%; --c-accent: 38 92% 50%; --c-accent-2: 38 92% 58%;
+  }
+  /* Theme: Violet */
+  [data-theme="violet"] {
+    --c-bg: 270 40% 6%; --c-card: 270 33% 11%; --c-soft: 270 28% 17%; --c-soft-2: 270 28% 23%;
+    --c-border: 270 28% 21%; --c-input: 270 40% 8%; --c-text: 270 40% 98%; --c-text-soft: 270 25% 86%;
+    --c-dim: 270 20% 60%; --c-accent: 265 89% 64%; --c-accent-2: 265 89% 72%;
+  }
+  /* Theme: Crimson */
+  [data-theme="crimson"] {
+    --c-bg: 0 40% 6%; --c-card: 0 33% 11%; --c-soft: 0 28% 17%; --c-soft-2: 0 28% 23%;
+    --c-border: 0 28% 21%; --c-input: 0 40% 8%; --c-text: 0 40% 98%; --c-text-soft: 0 25% 86%;
+    --c-dim: 0 20% 60%; --c-accent: 0 84% 50%; --c-accent-2: 0 84% 58%;
+  }
+  /* Theme: Teal */
+  [data-theme="teal"] {
+    --c-bg: 185 40% 5%; --c-card: 185 33% 10%; --c-soft: 185 28% 16%; --c-soft-2: 185 28% 22%;
+    --c-border: 185 28% 20%; --c-input: 185 40% 7%; --c-text: 180 40% 98%; --c-text-soft: 180 25% 86%;
+    --c-dim: 182 20% 58%; --c-accent: 188 86% 42%; --c-accent-2: 188 86% 50%;
+  }
+  /* Theme: Graphite (neutral) */
+  [data-theme="graphite"] {
+    --c-bg: 220 16% 8%; --c-card: 220 14% 12%; --c-soft: 220 12% 18%; --c-soft-2: 220 12% 24%;
+    --c-border: 220 12% 20%; --c-input: 220 16% 10%; --c-text: 220 30% 96%; --c-text-soft: 220 20% 82%;
+    --c-dim: 220 10% 60%; --c-accent: 215 25% 60%; --c-accent-2: 215 30% 68%;
+  }
+  /* Theme: Light */
+  [data-theme="light"] {
+    --c-bg: 210 40% 96%; --c-card: 0 0% 100%; --c-soft: 210 20% 92%; --c-soft-2: 210 20% 86%;
+    --c-border: 220 13% 88%; --c-input: 0 0% 100%; --c-text: 222 47% 11%; --c-text-soft: 220 14% 30%;
+    --c-dim: 215 16% 45%; --c-accent: 243 75% 59%; --c-accent-2: 245 76% 66%;
+  }
 }
-
-
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-
   body {
     @apply bg-background text-foreground font-body;
   }

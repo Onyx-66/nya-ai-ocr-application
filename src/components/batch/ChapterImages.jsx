@@ -27,13 +27,13 @@ export default function ChapterImages({ images, onReorder, onRemove, onPreview }
                   <div
                     ref={p.innerRef}
                     {...p.draggableProps}
-                    className={`relative group rounded-lg overflow-hidden border border-slate-800 aspect-square bg-slate-950 ${
-                      s.isDragging ? 'ring-2 ring-indigo-500 opacity-90' : ''
+                    className={`relative group rounded-lg overflow-hidden border border-[hsl(var(--c-border))] aspect-square bg-[hsl(var(--c-bg))] ${
+                      s.isDragging ? 'ring-2 ring-[hsl(var(--c-accent))] opacity-90' : ''
                     }`}
                   >
                     <div
                       {...p.dragHandleProps}
-                      className="absolute top-1 left-1 z-10 w-6 h-6 rounded bg-slate-950/80 flex items-center justify-center cursor-grab text-slate-300 hover:text-white"
+                      className="absolute top-1 left-1 z-10 w-6 h-6 rounded bg-black/50 flex items-center justify-center cursor-grab text-white hover:bg-black/70"
                       title="Drag to reorder"
                     >
                       <GripVertical className="w-3.5 h-3.5" />
@@ -42,16 +42,16 @@ export default function ChapterImages({ images, onReorder, onRemove, onPreview }
                       src={img.url}
                       alt={img.name}
                       onClick={() => onPreview(i)}
-                      className="w-full h-full object-cover cursor-zoom-in pointer-events-auto"
+                      className="w-full h-full object-cover cursor-zoom-in"
                     />
                     <button
                       onClick={() => onRemove(i)}
-                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-slate-950/80 text-slate-300 flex items-center justify-center hover:text-rose-400"
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:text-rose-400"
                       title="Remove image"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                    <span className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[10px] text-slate-300 px-1 py-0.5 truncate">
+                    <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-white px-1 py-0.5 truncate">
                       {i + 1}. {img.name}
                     </span>
                   </div>

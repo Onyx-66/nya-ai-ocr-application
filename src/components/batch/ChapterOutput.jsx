@@ -25,9 +25,7 @@ export default function ChapterOutput({
     const blob = new Blob([content], { type: format === 'md' ? 'text/markdown' : 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
+    a.href = url; a.download = filename; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -49,15 +47,15 @@ export default function ChapterOutput({
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-1 p-1 bg-slate-950 rounded-lg border border-slate-800 w-fit">
+      <div className="flex gap-1 p-1 bg-[hsl(var(--c-input))] rounded-lg border border-[hsl(var(--c-border))] w-fit">
         <button
           onClick={() => setActiveTab('ocr')}
-          className={`px-3 py-1 rounded-md text-xs transition-colors ${activeTab === 'ocr' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+          className={`px-3 py-1 rounded-md text-xs transition-colors ${activeTab === 'ocr' ? 'bg-[hsl(var(--c-accent))] text-white' : 'text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))]'}`}
         >OCR</button>
         {translateEnabled && (
           <button
             onClick={() => setActiveTab('translate')}
-            className={`px-3 py-1 rounded-md text-xs transition-colors ${activeTab === 'translate' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+            className={`px-3 py-1 rounded-md text-xs transition-colors ${activeTab === 'translate' ? 'bg-[hsl(var(--c-accent))] text-white' : 'text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))]'}`}
           >Translation</button>
         )}
       </div>
@@ -68,14 +66,14 @@ export default function ChapterOutput({
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={download}
-            className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-lg py-2 text-sm font-medium"
+            className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] text-[hsl(var(--c-text))] rounded-lg py-2 text-sm font-medium"
           >
             <Download className="w-4 h-4" /> Download
           </button>
           <button
             onClick={upload}
             disabled={uploading}
-            className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg py-2 text-sm font-medium"
+            className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] disabled:opacity-50 text-white rounded-lg py-2 text-sm font-medium"
           >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />}
             {uploading ? 'Uploading…' : 'Upload to Drive'}

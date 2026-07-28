@@ -34,9 +34,7 @@ export default function ImageUploader({ onImages }) {
   const uploadFiles = async (fileList) => {
     setLoading(true); setError(null);
     try {
-      const files = Array.from(fileList)
-        .filter((f) => IMAGE_RE.test(f.name))
-        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+      const files = Array.from(fileList).filter((f) => IMAGE_RE.test(f.name)).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
       if (!files.length) { setError('No image files selected'); setLoading(false); return; }
       const imgs = [];
       for (const f of files) {
@@ -44,9 +42,7 @@ export default function ImageUploader({ onImages }) {
         imgs.push({ url: file_url, name: f.name });
       }
       onImages(imgs);
-    } catch (e) {
-      setError(e.message || 'Upload failed');
-    }
+    } catch (e) { setError(e.message || 'Upload failed'); }
     setLoading(false);
   };
 
@@ -54,9 +50,7 @@ export default function ImageUploader({ onImages }) {
     setLoading(true); setError(null);
     try {
       const zip = await JSZip.loadAsync(file);
-      const entries = Object.values(zip.files)
-        .filter((e) => !e.dir && IMAGE_RE.test(e.name))
-        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+      const entries = Object.values(zip.files).filter((e) => !e.dir && IMAGE_RE.test(e.name)).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
       if (!entries.length) { setError('No images found in the ZIP'); setLoading(false); return; }
       const imgs = [];
       for (const entry of entries) {
@@ -66,9 +60,7 @@ export default function ImageUploader({ onImages }) {
         imgs.push({ url: file_url, name: entry.name.split('/').pop() });
       }
       onImages(imgs);
-    } catch (e) {
-      setError(e.message || 'ZIP extraction failed');
-    }
+    } catch (e) { setError(e.message || 'ZIP extraction failed'); }
     setLoading(false);
   };
 
@@ -81,25 +73,22 @@ export default function ImageUploader({ onImages }) {
       const imgs = (res.data && res.data.images) || [];
       if (imgs.length) onImages(imgs);
       else setError('No images found (folders, ZIP archives, and single images are supported)');
-    } catch (e) {
-      setError(e.message || 'Could not load from Drive (is Google Drive connected in Settings?)');
-    }
+    } catch (e) { setError(e.message || 'Could not load from Drive (is Google Drive connected in Settings?)'); }
     setLoading(false);
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-1 p-1 bg-slate-900 rounded-lg border border-slate-800 w-fit">
+      <div className="flex gap-1 p-1 bg-[hsl(var(--c-input))] rounded-lg border border-[hsl(var(--c-border))] w-fit">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => { setTab(id); setError(null); }}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
-              tab === id ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'
+              tab === id ? 'bg-[hsl(var(--c-accent))] text-white' : 'text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))]'
             }`}
           >
-            <Icon className="w-4 h-4" />
-            {label}
+            <Icon className="w-4 h-4" /> {label}
           </button>
         ))}
       </div>
@@ -111,43 +100,43 @@ export default function ImageUploader({ onImages }) {
           onDragLeave={() => setDragOver(false)}
           onDrop={(e) => { e.preventDefault(); setDragOver(false); uploadFiles(e.dataTransfer.files); }}
           className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-colors ${
-            dragOver ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600 bg-slate-900/40'
+            dragOver ? 'border-[hsl(var(--c-accent))] ring-2 ring-[hsl(var(--c-accent))]' : 'border-[hsl(var(--c-border))] hover:border-[hsl(var(--c-accent))] bg-[hsl(var(--c-input))]'
           }`}
         >
           <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadFiles(e.target.files)} />
-          <Upload className="w-8 h-8 mx-auto mb-2 text-slate-500" />
-          <p className="text-sm text-slate-300">Drag &amp; drop images or click to browse</p>
-          <p className="text-xs text-slate-500 mt-1">PNG, JPG, WEBP, GIF — sorted by filename</p>
+          <Upload className="w-8 h-8 mx-auto mb-2 text-[hsl(var(--c-dim))]" />
+          <p className="text-sm text-[hsl(var(--c-text-soft))]">Drag & drop images or click to browse</p>
+          <p className="text-xs text-[hsl(var(--c-dim))] mt-1">PNG, JPG, WEBP, GIF — sorted by filename</p>
         </div>
       )}
 
       {tab === 'zip' && (
         <div
           onClick={() => !loading && zipRef.current?.click()}
-          className="cursor-pointer rounded-xl border-2 border-dashed border-slate-700 hover:border-slate-600 bg-slate-900/40 p-8 text-center"
+          className="cursor-pointer rounded-xl border-2 border-dashed border-[hsl(var(--c-border))] hover:border-[hsl(var(--c-accent))] bg-[hsl(var(--c-input))] p-8 text-center"
         >
           <input ref={zipRef} type="file" accept=".zip" className="hidden" onChange={(e) => e.target.files[0] && handleZip(e.target.files[0])} />
-          <FileArchive className="w-8 h-8 mx-auto mb-2 text-slate-500" />
-          <p className="text-sm text-slate-300">Click to select a .zip archive</p>
-          <p className="text-xs text-slate-500 mt-1">All images inside are extracted &amp; sorted</p>
+          <FileArchive className="w-8 h-8 mx-auto mb-2 text-[hsl(var(--c-dim))]" />
+          <p className="text-sm text-[hsl(var(--c-text-soft))]">Click to select a .zip archive</p>
+          <p className="text-xs text-[hsl(var(--c-dim))] mt-1">All images inside are extracted & sorted</p>
         </div>
       )}
 
       {tab === 'drive' && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+        <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-input))] p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <Link2 className="w-4 h-4 text-slate-400" />
+            <Link2 className="w-4 h-4 text-[hsl(var(--c-dim))]" />
             <input
               value={driveLink}
               onChange={(e) => setDriveLink(e.target.value)}
               placeholder="Paste a Google Drive folder, file, or ZIP link"
-              className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
+              className="flex-1 bg-transparent border border-[hsl(var(--c-border))] rounded-lg px-3 py-2 text-sm text-[hsl(var(--c-text))] placeholder:text-[hsl(var(--c-dim))] focus:outline-none focus:border-[hsl(var(--c-accent))]"
             />
           </div>
           <button
             onClick={handleDrive}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg py-2 text-sm font-medium"
+            className="w-full flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] disabled:opacity-50 text-white rounded-lg py-2 text-sm font-medium"
           >
             <FolderOpen className="w-4 h-4" /> Load images from Drive
           </button>
@@ -155,8 +144,8 @@ export default function ImageUploader({ onImages }) {
       )}
 
       {loading && (
-        <div className="flex items-center gap-2 text-sm text-slate-400">
-          <Loader2 className="w-4 h-4 animate-spin" /> Uploading &amp; preparing images…
+        <div className="flex items-center gap-2 text-sm text-[hsl(var(--c-dim))]">
+          <Loader2 className="w-4 h-4 animate-spin" /> Uploading & preparing images…
         </div>
       )}
       {error && <p className="text-sm text-rose-400">{error}</p>}

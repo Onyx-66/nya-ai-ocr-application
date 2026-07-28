@@ -15,47 +15,38 @@ export default function ChapterCard({
   const set = (patch) => onUpdate(chapter.id, patch);
   const statusBadge = () => {
     const s = chapter.ocrStatus;
-    if (s === 'running') return <span className="text-xs text-indigo-300 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> OCR</span>;
+    if (s === 'running') return <span className="text-xs text-[hsl(var(--c-accent))] flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> OCR</span>;
     if (s === 'done') return <span className="text-xs text-emerald-400">OCR ✓</span>;
     if (s === 'error') return <span className="text-xs text-rose-400">OCR ✗</span>;
     return null;
   };
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
-      {/* Header */}
+    <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] overflow-hidden">
       <div className="flex items-center gap-3 p-3 sm:p-4">
-        <button
-          onClick={() => setExpanded((e) => !e)}
-          className="text-slate-400 hover:text-slate-200 shrink-0"
-        >
+        <button onClick={() => setExpanded((e) => !e)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] shrink-0">
           <ChevronDown className={`w-5 h-5 transition-transform ${expanded ? '' : '-rotate-90'}`} />
         </button>
         <input
           value={chapter.title}
           onChange={(e) => set({ title: e.target.value, ocrStatus: 'idle', ocrOutput: '' })}
           placeholder={`Chapter ${index + 1} title`}
-          className="flex-1 min-w-0 bg-transparent border-b border-transparent hover:border-slate-700 focus:border-indigo-500 focus:outline-none px-1 py-1 text-sm text-slate-100 placeholder:text-slate-600"
+          className="flex-1 min-w-0 bg-transparent border-b border-transparent hover:border-[hsl(var(--c-border))] focus:border-[hsl(var(--c-accent))] focus:outline-none px-1 py-1 text-sm text-[hsl(var(--c-text))] placeholder:text-[hsl(var(--c-dim))]"
         />
-        <span className="hidden sm:flex items-center gap-1 text-xs text-slate-500 shrink-0">
+        <span className="hidden sm:flex items-center gap-1 text-xs text-[hsl(var(--c-dim))] shrink-0">
           <Images className="w-3.5 h-3.5" /> {chapter.images.length}
         </span>
         {statusBadge()}
-        <button
-          onClick={() => onRemove(chapter.id)}
-          className="text-slate-500 hover:text-rose-400 shrink-0"
-          title="Remove chapter"
-        >
+        <button onClick={() => onRemove(chapter.id)} className="text-[hsl(var(--c-dim))] hover:text-rose-400 shrink-0" title="Remove chapter">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Body */}
       {expanded && (
-        <div className="px-3 sm:px-4 pb-4 space-y-4 border-t border-slate-800 pt-4">
+        <div className="px-3 sm:px-4 pb-4 space-y-4 border-t border-[hsl(var(--c-border))] pt-4">
           <button
             onClick={() => setShowUploader((s) => !s)}
-            className="flex items-center gap-2 text-xs text-indigo-300 hover:text-indigo-200"
+            className="flex items-center gap-2 text-xs text-[hsl(var(--c-accent))] hover:opacity-80"
           >
             <Plus className="w-3.5 h-3.5" /> {showUploader ? 'Hide add images' : 'Add images (files / ZIP / Drive)'}
           </button>
@@ -79,7 +70,7 @@ export default function ChapterCard({
             <button
               onClick={() => onRunOcr(chapter.id)}
               disabled={chapter.ocrStatus === 'running' || !chapter.images.length}
-              className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg py-2 text-sm font-medium"
+              className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-accent))] hover:bg-[hsl(var(--c-accent-2))] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg py-2 text-sm font-medium"
             >
               {chapter.ocrStatus === 'running' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               Run OCR
@@ -88,7 +79,7 @@ export default function ChapterCard({
               <button
                 onClick={() => onTranslate(chapter.id)}
                 disabled={chapter.translateStatus === 'running' || !chapter.ocrOutput}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-100 rounded-lg py-2 text-sm font-medium"
+                className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-40 disabled:cursor-not-allowed text-[hsl(var(--c-text))] rounded-lg py-2 text-sm font-medium"
               >
                 {chapter.translateStatus === 'running' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Languages className="w-4 h-4" />}
                 Translate
