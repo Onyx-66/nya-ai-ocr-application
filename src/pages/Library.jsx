@@ -82,7 +82,7 @@ export default function Library() {
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-medium text-[hsl(var(--c-text))]">{connected ? 'Device folder connected' : 'Connect a device folder'}</h2>
-            <p className="text-xs text-[hsl(var(--c-dim))]">{connected ? 'Saves write into "nya ai ocr/library".' : 'Pick a folder once to save the structured library.'}</p>
+            {connected && <p className="text-xs text-[hsl(var(--c-dim))]">Saves write into "nya ai ocr/library".</p>}
           </div>
           {connected ? (
             <button onClick={disconnect} className="flex items-center gap-1.5 text-xs text-[hsl(var(--c-dim))] hover:text-rose-400 shrink-0"><Unplug className="w-4 h-4" /><span className="hidden sm:inline">Disconnect</span></button>
