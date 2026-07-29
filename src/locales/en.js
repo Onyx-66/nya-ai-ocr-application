@@ -38,5 +38,10 @@ export default {
   'settings.adminSubtitle': 'Manage users and credits',
   'settings.localServer': 'Local OCR server',
   'settings.localServerSubtitle': 'Optional local endpoint for offline processing',
-  'settings.localServerPlaceholder': 'http://localhost:8000'
+  'settings.localServerPlaceholder': 'http://localhost:8000',
+  'settings.testConnection': 'Test connection',
+  'settings.connecting': 'Testing…',
+  'settings.connectionOk': 'Server reachable',
+  'settings.connectionFail': 'Server not reachable',
+  'settings.localServerHint': 'Run the Python controller (see ocr-controller/README.md). Leave empty to use the cloud OCR.'
 };

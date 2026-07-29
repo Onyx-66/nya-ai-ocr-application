@@ -1,0 +1,17 @@
+# MangaText AI — Local OCR Controller dependencies
+# Tested with Python 3.10–3.11 on Windows (RDP) and Linux.
+# For a GPU build, see README.md → "GPU (optional)" before installing.
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+httpx==0.27.2
+
+# OCR engine — PaddleOCR (CPU)
+paddlepaddle==2.6.1
+paddleocr==2.7.3
+
+# Image decoding helpers
+opencv-python-headless==4.10.0.84
+numpy==1.26.4
+pillow==10.4.0
