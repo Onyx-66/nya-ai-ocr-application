@@ -12,15 +12,16 @@ import Operations from '@/pages/Operations';
 import Usage from '@/pages/Usage';
 import Settings from '@/pages/Settings';
 import ScanAdvisor from '@/components/ScanAdvisor';
+import { useI18n } from '@/lib/I18nContext';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a688b2529efa59d9f9f1863/5009bade8_AddText_07-27-012338.png';
 
-const navItems = [
-  { to: '/', label: 'Workspace', icon: ScanText },
-  { to: '/library', label: 'Library', icon: LibraryIcon },
-  { to: '/operations', label: 'Operations', icon: Activity },
-  { to: '/usage', label: 'Usage', icon: BarChart3 },
-  { to: '/settings', label: 'Settings', icon: SettingsIcon }
+const navKeys = [
+  { to: '/', key: 'nav.workspace', icon: ScanText },
+  { to: '/library', key: 'nav.library', icon: LibraryIcon },
+  { to: '/operations', key: 'nav.operations', icon: Activity },
+  { to: '/usage', key: 'nav.usage', icon: BarChart3 },
+  { to: '/settings', key: 'nav.settings', icon: SettingsIcon }
 ];
 
 // Keep-alive tabs: all pages stay mounted; inactive ones are hidden so their
@@ -37,7 +38,9 @@ export default function Layout() {
   const { pathname } = useLocation();
   const { user, checkUserAuth } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [advisorOpen, setAdvisorOpen] = useState(false);
+  const navItems = navKeys.map((n) => ({ ...n, label: t(n.key) }));
 
   // First-use welcome credits (15) + free daily login gift (+4).
   useEffect(() => {
@@ -47,7 +50,7 @@ export default function Layout() {
     base44.functions.invoke('manageCredits', { action: 'daily_gift' }).then((res) => {
       if (res.data && res.data.granted) {
         checkUserAuth();
-        toast({ variant: 'default', title: 'Daily login gift', description: '+4 credits added to your account.' });
+        toast({ variant: 'default', title: t('daily.title'), description: t('daily.desc') });
       }
     }).catch(() => {});
   }, [user]);
@@ -82,13 +85,13 @@ export default function Layout() {
           <div className="flex items-center gap-1.5 text-sm justify-center xl:justify-start">
             <Zap className="w-4 h-4 text-[hsl(var(--c-accent))] shrink-0" />
             <span className="font-semibold text-[hsl(var(--c-text))]">{user?.credits ?? '…'}</span>
-            <span className="text-xs text-[hsl(var(--c-dim))] hidden xl:inline">credits</span>
+            <span className="text-xs text-[hsl(var(--c-dim))] hidden xl:inline">{t('common.credits')}</span>
           </div>
           <button onClick={() => setAdvisorOpen(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] text-[hsl(var(--c-text))] justify-center xl:justify-start">
             <Sparkles className="w-4 h-4 text-[hsl(var(--c-accent))] shrink-0" />
-            <span className="hidden xl:block">Scan advisor</span>
+            <span className="hidden xl:block">{t('common.scanAdvisor')}</span>
           </button>
-          <p className="text-xs text-[hsl(var(--c-dim))] hidden xl:block">AI OCR for manga &amp; webtoons</p>
+          <p className="text-xs text-[hsl(var(--c-dim))] hidden xl:block">{t('app.tagline')}</p>
         </div>
       </aside>
 
@@ -101,7 +104,7 @@ export default function Layout() {
           </div>
           <span className="font-heading font-semibold tracking-tight text-[hsl(var(--c-text))]">Nya Smart OCR</span>
           <button onClick={() => setAdvisorOpen(true)} className="ml-auto flex items-center gap-1.5 text-xs bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] text-[hsl(var(--c-text))] rounded-lg px-2.5 py-1.5 font-medium shrink-0">
-            <Sparkles className="w-4 h-4 text-[hsl(var(--c-accent))]" /><span className="hidden sm:inline">Advisor</span>
+            <Sparkles className="w-4 h-4 text-[hsl(var(--c-accent))]" /><span className="hidden sm:inline">{t('common.advisor')}</span>
           </button>
           <span className="flex items-center gap-1 text-xs text-[hsl(var(--c-dim))] shrink-0">
             <Zap className="w-3.5 h-3.5 text-[hsl(var(--c-accent))]" />

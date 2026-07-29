@@ -8,11 +8,38 @@ import { logUsage } from '@/lib/usage';
 import { getMarkers } from '@/lib/markers';
 import { formatPages } from '@/lib/formatOutput';
 import * as store from '@/lib/workspaceStore';
+import { getLocalServer } from '@/lib/localServer';
 
 const PAGE_CONCURRENCY = 3;
 const CHAPTER_CONCURRENCY = 3;
 
 export const stop = requestStopAll;
+
+// Run OCR for a single image. When a local OCR server is configured in Settings,
+// route the request there (offline) instead of the Base44 cloud function.
+// Both paths return { pages: [{ items: [...] }] }.
+async function runOcrPage(img, ctx) {
+  const localBase = getLocalServer();
+  if (localBase) {
+    const fd = new FormData();
+    if (img.local && img.file instanceof File) {
+      fd.append('image', img.file, img.file.name || 'page.png');
+    } else {
+      fd.append('image_url', img.uploadedUrl || img.url);
+    }
+    fd.append('format', ctx.format || 'txt');
+    if (ctx.markers) fd.append('markers', JSON.stringify(ctx.markers));
+    if (ctx.emptyLine != null) fd.append('empty_line', String(ctx.emptyLine));
+    const r = await fetch(`${localBase.replace(/\/$/, '')}/ocr`, { method: 'POST', body: fd });
+    if (!r.ok) throw new Error(`Local server error: ${r.status}`);
+    const data = await r.json();
+    return { pages: (data.pages && data.pages.length) ? data.pages : [{ items: data.items || [] }] };
+  }
+  return base44.functions.invoke('ocrImages', {
+    image_urls: [img.uploadedUrl || img.url], format: ctx.format, title: null,
+    markers: ctx.markers, empty_line: ctx.emptyLine
+  });
+}
 
 function chapterNumberOf(id) {
   const i = store.getState().chapters.findIndex((c) => c.id === id);
@@ -48,19 +75,19 @@ export async function runChapterOcr(chapter, ctx) {
       store.updateChapter(id, { perPage: [...perPage] });
       try {
         const img = images[idx];
-        let ocrUrl = img.uploadedUrl || null;
-        if (!ocrUrl && img.local && img.file instanceof File) {
+        const useLocal = !!getLocalServer();
+        let pageImg = img;
+        // Skip the cloud upload entirely when a local server is configured — the
+        // file is sent straight to the user's local endpoint.
+        if (!useLocal && !img.uploadedUrl && img.local && img.file instanceof File) {
           const up = await base44.integrations.Core.UploadFile({ file: img.file });
-          ocrUrl = up.file_url;
+          pageImg = { ...img, uploadedUrl: up.file_url };
           const ch = store.getState().chapters.find((c) => c.id === id);
-          if (ch) store.updateChapter(id, { images: ch.images.map((im, j) => j === idx ? { ...im, uploadedUrl: ocrUrl } : im) });
+          if (ch) store.updateChapter(id, { images: ch.images.map((im, j) => j === idx ? { ...im, uploadedUrl: up.file_url } : im) });
         }
-        if (!ocrUrl) ocrUrl = img.url;
-        const res = await base44.functions.invoke('ocrImages', {
-          image_urls: [ocrUrl], format: ctx.format, title: null,
-          markers: ctx.markers, empty_line: ctx.emptyLine
-        });
-        pageItems[idx] = (res.data && res.data.pages && res.data.pages[0]) || { items: [] };
+        const res = await runOcrPage(pageImg, ctx);
+        const pagesArr = res.data ? res.data.pages : res.pages;
+        pageItems[idx] = (pagesArr && pagesArr[0]) || { items: [] };
         perPage[idx] = { status: 'done' };
         completed++;
         const progress = Math.round((completed / images.length) * 100);
