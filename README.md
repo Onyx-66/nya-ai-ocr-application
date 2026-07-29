@@ -68,6 +68,23 @@ After pushing your changes to git, open the Base44 dashboard and publish the app
 base44 dashboard open
 ```
 
+## Local Server Controllers (Optional)
+
+The app can route pipeline stages to self-hosted Python controllers for
+free, high-speed processing. Configure URLs in **Settings → Local servers**.
+Each stage is independent — mix local and cloud as needed.
+
+| Stage | Controller | Port | Status |
+|---|---|---|---|
+| OCR | [`ocr-controller/`](ocr-controller/) | 8000 | ✅ Implemented (PaddleOCR) |
+| Cleaning | [`clean-controller/`](clean-controller/) | 8001 | 🔧 Stub — TODO: inpainting model |
+| Translation | [`translate-controller/`](translate-controller/) | 8002 | 🔧 Stub — TODO: local LLM |
+| Typesetting | [`typeset-controller/`](typeset-controller/) | 8003 | 🔧 Stub — TODO: text rendering |
+
+When a URL is empty, the app uses the Base44 cloud function for that stage
+(OCR and Translation) or skips it (Cleaning and Typesetting have no cloud
+equivalent). See each controller's `README.md` for setup instructions.
+
 ## Docs & Support
 
 Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)

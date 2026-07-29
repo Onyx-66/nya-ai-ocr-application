@@ -6,17 +6,21 @@ import { getActiveTemplate, ensureDefaultTemplates } from '@/lib/exportTemplates
 import { getMarkers, saveMarkers } from '@/lib/markers';
 import * as store from '@/lib/workspaceStore';
 import * as engine from '@/lib/ocrEngine';
+import { hasLocalServer } from '@/lib/localServer';
 import { requestStopAll } from '@/lib/operations';
 import GlobalOptions from '@/components/batch/GlobalOptions';
 import ChapterCard from '@/components/batch/ChapterCard';
+import StageBadges from '@/components/batch/StageBadges';
 import ImageLightbox from '@/components/batch/ImageLightbox';
 import ImportModal from '@/components/batch/ImportModal';
 import { Trash2, Sparkles, Zap, Play, Square, ChevronsDown, ChevronsUp } from 'lucide-react';
 
 const newChapter = (overrides = {}) => ({
   id: crypto.randomUUID(), title: '', images: [], expanded: true,
-  ocrStatus: 'idle', ocrProgress: 0, perPage: [], ocrOutput: '', ocrError: '',
+  ocrStatus: 'idle', ocrProgress: 0, perPage: [], ocrOutput: '', ocrError: '', ocrPages: [],
   translateStatus: 'idle', translateProgress: 0, translateOutput: '', translateError: '',
+  cleanStatus: 'idle', cleanProgress: 0, cleanedImages: [], cleanError: '',
+  typesetStatus: 'idle', typesetProgress: 0, typesetImages: [], typesetError: '',
   ...overrides
 });
 
@@ -31,7 +35,6 @@ export default function BatchWorkspace() {
   const creditsRef = useRef(user?.credits ?? 0);
   useEffect(() => { creditsRef.current = user?.credits ?? 0; setCredits(user?.credits ?? 0); }, [user]);
 
-  // First-run defaults if the store is empty.
   useEffect(() => {
     ensureDefaultTemplates();
     const s = store.getState();
@@ -45,7 +48,7 @@ export default function BatchWorkspace() {
   }, []);
 
   const hasCredits = credits >= 1;
-  const running = chapters.some((c) => c.ocrStatus === 'running' || c.translateStatus === 'running');
+  const running = chapters.some((c) => c.ocrStatus === 'running' || c.translateStatus === 'running' || c.cleanStatus === 'running' || c.typesetStatus === 'running');
 
   const checkCredits = () => creditsRef.current >= 1;
   const spendCredit = async () => {
@@ -61,7 +64,8 @@ export default function BatchWorkspace() {
   const makeCtx = () => ({
     serieTitle: store.getState().serieTitle, format: store.getState().format,
     markers: getMarkers(), emptyLine: store.getState().emptyLine,
-    targetLanguage: store.getState().targetLanguage, checkCredits, spendCredit
+    targetLanguage: store.getState().targetLanguage, checkCredits, spendCredit,
+    includeBoxes: hasLocalServer('typesetting')
   });
 
   const onField = (k, v) => {
@@ -81,6 +85,8 @@ export default function BatchWorkspace() {
 
   const onRunOcr = (id) => { const ch = store.getState().chapters.find((c) => c.id === id); if (ch) engine.runChapterOcr(ch, makeCtx()); };
   const onTranslate = (id) => { const ch = store.getState().chapters.find((c) => c.id === id); if (ch) engine.runChapterTranslate(ch, makeCtx()); };
+  const onClean = (id) => { const ch = store.getState().chapters.find((c) => c.id === id); if (ch) engine.runChapterClean(ch, makeCtx()); };
+  const onTypeset = (id) => { const ch = store.getState().chapters.find((c) => c.id === id); if (ch) engine.runChapterTypeset(ch, makeCtx()); };
 
   const startOperation = () => engine.startBatch({ translate: store.getState().translateEnabled, checkCredits, spendCredit });
   const stopOperation = () => requestStopAll();
@@ -102,6 +108,7 @@ export default function BatchWorkspace() {
             </span>
           </div>
         </div>
+        <div className="mb-4"><StageBadges /></div>
         <p className="text-[hsl(var(--c-dim))] text-sm mb-6">Set your options, import chapters, then start the operation. Running jobs keep going if you switch pages.</p>
 
         <div className="space-y-4">
@@ -149,6 +156,7 @@ export default function BatchWorkspace() {
               uploadFolder={uploadFolder} canRun={hasCredits}
               onUpdate={update} onRemove={removeChapter}
               onRunOcr={onRunOcr} onTranslate={onTranslate}
+              onClean={onClean} onTypeset={onTypeset}
               onToggleExpand={(cid) => store.updateChapter(cid, { expanded: !(store.getState().chapters.find((c) => c.id === cid)?.expanded !== false) })}
               onPreview={(images, idx) => setLightbox({ images, index: idx })}
             />

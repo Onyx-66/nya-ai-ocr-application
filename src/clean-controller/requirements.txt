@@ -1,0 +1,15 @@
+# MangaText AI — Local Cleaning Controller dependencies
+# Python 3.10–3.11 recommended.
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+httpx==0.27.2
+
+# TODO: Add your inpainting model dependencies here, e.g.:
+# simple-lama-inpainting==0.1.2
+# torch==2.2.1
+# torchvision==0.17.1
+# opencv-python-headless==4.10.0.84
+# numpy==1.26.4
+# pillow==10.4.0

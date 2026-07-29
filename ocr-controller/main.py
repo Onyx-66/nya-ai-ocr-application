@@ -61,6 +61,7 @@ async def ocr(
     format: str | None = Form(None),  # accepted for compatibility; web app formats itself
     markers: str | None = Form(None),  # accepted for compatibility
     empty_line: str | None = Form(None),  # accepted for compatibility
+    include_boxes: str | None = Form(None),  # when 'true', include bubble geometry in items
     x_api_key: str | None = Header(None),
 ):
     _check_key(x_api_key)
@@ -108,8 +109,14 @@ async def ocr(
     items = sort_reading_order(items, direction=direction)
     items = classify(items, img_shape)
 
-    # The web app only consumes text + type; drop geometry.
-    clean = [{"text": it["text"], "type": it["type"]} for it in items]
+    # The web app consumes text + type. When include_boxes is set (typesetting
+    # pipeline), also include the bubble geometry so the typeset controller can
+    # render text back into each region.
+    want_boxes = (include_boxes or "").strip().lower() in ("1", "true", "yes")
+    if want_boxes:
+        clean = [{"text": it["text"], "type": it["type"], "box": it["box"]} for it in items]
+    else:
+        clean = [{"text": it["text"], "type": it["type"]} for it in items]
 
     return {"pages": [{"items": clean}], "count": len(clean), "lang": use_lang, "direction": direction}
 

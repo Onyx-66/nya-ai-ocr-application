@@ -36,12 +36,19 @@ export default {
   'settings.driveSubtitle': 'Your account and upload folder',
   'settings.admin': 'Admin',
   'settings.adminSubtitle': 'Manage users and credits',
-  'settings.localServer': 'Local OCR server',
-  'settings.localServerSubtitle': 'Optional local endpoint for offline processing',
+  'settings.localServer': 'Local servers',
+  'settings.localServerSubtitle': 'Optional local endpoints for each pipeline stage',
   'settings.localServerPlaceholder': 'http://localhost:8000',
   'settings.testConnection': 'Test connection',
   'settings.connecting': 'Testing…',
   'settings.connectionOk': 'Server reachable',
   'settings.connectionFail': 'Server not reachable',
-  'settings.localServerHint': 'Run the Python controller (see ocr-controller/README.md). Leave empty to use the cloud OCR.'
+  'settings.stageOcr': 'OCR',
+  'settings.stageCleaning': 'Cleaning',
+  'settings.stageTranslation': 'Translation',
+  'settings.stageTypesetting': 'Typesetting',
+  'settings.localServerHintOcr': 'Run the OCR controller (see ocr-controller/README.md). Leave empty to use cloud OCR.',
+  'settings.localServerHintCleaning': 'Run the cleaning controller (see clean-controller/README.md). Leave empty to skip cleaning.',
+  'settings.localServerHintTranslation': 'Run the translation controller (see translate-controller/README.md). Leave empty to use cloud translation.',
+  'settings.localServerHintTypesetting': 'Run the typesetting controller (see typeset-controller/README.md). Leave empty to skip typesetting.'
 };

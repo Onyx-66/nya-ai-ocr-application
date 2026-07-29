@@ -1,0 +1,12 @@
+# MangaText AI — Local Typesetting Controller dependencies
+# Python 3.10–3.11 recommended.
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+httpx==0.27.2
+
+# TODO: Add rendering dependencies here, e.g.:
+# pillow==10.4.0
+# opencv-python-headless==4.10.0.84
+# numpy==1.26.4

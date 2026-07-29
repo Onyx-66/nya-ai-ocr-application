@@ -2,12 +2,13 @@ import { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import ChapterImages from '@/components/batch/ChapterImages';
 import ChapterOutput from '@/components/batch/ChapterOutput';
-import { ChevronDown, Sparkles, Languages, Plus, Trash2, Loader2, Images, Download } from 'lucide-react';
+import { ChevronDown, Sparkles, Languages, Plus, Trash2, Loader2, Images, Download, Eraser, Type } from 'lucide-react';
 import { downloadTextFile } from '@/lib/fileDownload';
+import { hasLocalServer } from '@/lib/localServer';
 
 export default function ChapterCard({
   chapter, index, serieTitle, format, translateEnabled, targetLanguage, uploadFolder,
-  canRun, onUpdate, onRemove, onRunOcr, onTranslate, onToggleExpand, onPreview
+  canRun, onUpdate, onRemove, onRunOcr, onTranslate, onClean, onTypeset, onToggleExpand, onPreview
 }) {
   const expanded = chapter.expanded !== false;
   const [showUploader, setShowUploader] = useState(chapter.images.length === 0);
@@ -31,7 +32,9 @@ export default function ChapterCard({
   };
 
   const ocrRunning = chapter.ocrStatus === 'running';
+  const cleanRunning = chapter.cleanStatus === 'running';
   const tlRunning = chapter.translateStatus === 'running';
+  const tsRunning = chapter.typesetStatus === 'running';
 
   return (
     <div className="rounded-xl border border-[hsl(var(--c-border))] bg-[hsl(var(--c-card))] overflow-hidden">
@@ -49,15 +52,17 @@ export default function ChapterCard({
           <Images className="w-3.5 h-3.5" /> {chapter.images.length}
         </span>
         {badge('OCR', chapter.ocrStatus, chapter.ocrProgress)}
+        {hasLocalServer('cleaning') && badge('Clean', chapter.cleanStatus, chapter.cleanProgress)}
         {translateEnabled && badge('TL', chapter.translateStatus, chapter.translateProgress)}
+        {hasLocalServer('typesetting') && badge('Typeset', chapter.typesetStatus, chapter.typesetProgress)}
         <button onClick={() => onRemove(chapter.id)} className="text-[hsl(var(--c-dim))] hover:text-[hsl(var(--c-text))] shrink-0 p-3 -m-3 rounded-lg" title="Remove chapter">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
 
-      {(ocrRunning || tlRunning) && (
+      {(ocrRunning || cleanRunning || tlRunning || tsRunning) && (
         <div className="h-1 bg-[hsl(var(--c-soft))]">
-          <div className="h-full bg-[hsl(var(--c-accent))] transition-all" style={{ width: `${ocrRunning ? (chapter.ocrProgress ?? 0) : (chapter.translateProgress ?? 0)}%` }} />
+          <div className="h-full bg-[hsl(var(--c-accent))] transition-all" style={{ width: `${ocrRunning ? (chapter.ocrProgress ?? 0) : cleanRunning ? (chapter.cleanProgress ?? 0) : tlRunning ? (chapter.translateProgress ?? 0) : (chapter.typesetProgress ?? 0)}%` }} />
         </div>
       )}
 
@@ -84,7 +89,9 @@ export default function ChapterCard({
           )}
 
           {chapter.ocrError && <p className="text-xs text-rose-400">{chapter.ocrError}</p>}
+          {chapter.cleanError && <p className="text-xs text-rose-400">{chapter.cleanError}</p>}
           {chapter.translateError && <p className="text-xs text-rose-400">{chapter.translateError}</p>}
+          {chapter.typesetError && <p className="text-xs text-rose-400">{chapter.typesetError}</p>}
 
           <div className="flex flex-col sm:flex-row gap-2">
             <button
@@ -106,6 +113,31 @@ export default function ChapterCard({
               </button>
             )}
           </div>
+
+          {(hasLocalServer('cleaning') || hasLocalServer('typesetting')) && (
+            <div className="flex flex-col sm:flex-row gap-2">
+              {hasLocalServer('cleaning') && (
+                <button
+                  onClick={() => onClean(chapter.id)}
+                  disabled={chapter.cleanStatus === 'running' || !chapter.images.length}
+                  className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-40 disabled:cursor-not-allowed text-[hsl(var(--c-text))] rounded-lg py-2 text-sm font-medium"
+                >
+                  {chapter.cleanStatus === 'running' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eraser className="w-4 h-4" />}
+                  Clean
+                </button>
+              )}
+              {hasLocalServer('typesetting') && (
+                <button
+                  onClick={() => onTypeset(chapter.id)}
+                  disabled={chapter.typesetStatus === 'running' || !chapter.ocrOutput}
+                  className="flex-1 flex items-center justify-center gap-2 bg-[hsl(var(--c-soft))] hover:bg-[hsl(var(--c-soft-2))] disabled:opacity-40 disabled:cursor-not-allowed text-[hsl(var(--c-text))] rounded-lg py-2 text-sm font-medium"
+                >
+                  {chapter.typesetStatus === 'running' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Type className="w-4 h-4" />}
+                  Typeset
+                </button>
+              )}
+            </div>
+          )}
 
           {(chapter.ocrOutput || (translateEnabled && chapter.translateOutput)) && (
             <div className="flex flex-wrap gap-2">
